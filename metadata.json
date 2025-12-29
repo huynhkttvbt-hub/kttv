@@ -1,0 +1,5 @@
+{
+  "name": "Hệ Thống Quản Lý Số Liệu Khí Tượng Thủy Văn Lâm Đồng",
+  "description": "Ứng dụng quản lý, tra cứu và trực quan hóa dữ liệu khí tượng thủy văn tỉnh Lâm Đồng với chức năng biểu đồ, bảng số liệu và xuất Excel.",
+  "requestFramePermissions": []
+}
