@@ -20,7 +20,7 @@ const Header: React.FC<HeaderProps> = ({ activeMenuName, activeSubMenuName, isCo
         </h2>
         <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">
           <Activity size={10} className="text-blue-400" />
-          <span>Hệ thống tra cứu số liệu nhanh</span>
+          <span> Thống kê nhanh dữ liệu </span>
         </div>
       </div>
       

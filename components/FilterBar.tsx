@@ -1,16 +1,17 @@
 
 import React from 'react';
-import { FilterState } from '../types';
-import { Search, MapPin, Calendar } from 'lucide-react';
+import { FilterState, MeteoFactor } from '../types';
+import { Search, MapPin, Calendar, Sliders } from 'lucide-react';
 
 interface FilterBarProps {
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
   stations: string[];
   groups: string[];
+  showFactor?: boolean; // Prop mới để điều khiển hiển thị dropdown Yếu tố
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, stations, groups }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, stations, groups, showFactor = false }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     onFilterChange({ ...filters, [name]: value });
@@ -49,6 +50,27 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, onFilterChange, stations
           {stations.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
       </div>
+
+      {/* Cột Yếu tố (Chỉ hiện khi showFactor = true) - Đã đổi màu sang Blue */}
+      {showFactor && (
+        <div className="flex flex-col gap-1.5 w-[150px]">
+          <label className="text-[10px] font-black text-blue-600 uppercase flex items-center gap-1 ml-1">
+            <Sliders size={10} /> Yếu tố
+          </label>
+          <select 
+            name="factor"
+            value={filters.factor}
+            onChange={handleChange}
+            className="bg-blue-50/50 border border-blue-100 text-blue-800 text-[11px] font-black rounded-lg focus:ring-2 focus:ring-blue-500/20 outline-none block w-full p-2.5 transition-all appearance-none cursor-pointer"
+          >
+            <option value={MeteoFactor.NHIET_AM}>Nhiệt độ - Ẩm độ</option>
+            <option value={MeteoFactor.KHI_AP}>Khí áp</option>
+            <option value={MeteoFactor.GIO}>Gió</option>
+            <option value={MeteoFactor.MUA}>Mưa</option>
+            <option value={MeteoFactor.HIEN_TUONG}>Hiện tượng</option>
+          </select>
+        </div>
+      )}
 
       <div className="flex flex-col gap-1.5 min-w-[130px]">
         <label className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1 ml-1">

@@ -5,7 +5,46 @@ export interface HydroData {
   MaTram: string;
   TenTram: string | null;
   TenDai: string | null;
-  [key: string]: any; // Cho phép truy cập hourly columns 00h-23h và các cột extra
+  [key: string]: any; 
+}
+
+export interface MeteoData {
+  id: number;
+  Ngay: string;
+  MaTram: string;
+  Tram: string | null;
+  Dai: string | null;
+  // Nhiệt độ
+  T1h?: number; T4h?: number; T7h?: number; T10h?: number; T13h?: number; T16h?: number; T19h?: number; T22h?: number;
+  NhietTB?: number; NhietTx?: number; NhietTn?: number;
+  // Ẩm độ
+  U1h?: number; U4h?: number; U7h?: number; U10h?: number; U13h?: number; U16h?: number; U19h?: number; U22h?: number;
+  AmTB?: number; Umin?: number;
+  // Khí áp
+  Pt1h?: number; Pt4h?: number; Pt7h?: number; Pt10h?: number; Pt13h?: number; Pt16h?: number; Pt19h?: number; Pt22h?: number; PtTB?: number;
+  Pb1h?: number; Pb4h?: number; Pb7h?: number; Pb10h?: number; Pb13h?: number; Pb16h?: number; Pb19h?: number; Pb22h?: number; PbTB?: number;
+  // Gió
+  dd1h?: string; ff1h?: number;
+  dd4h?: string; ff4h?: number;
+  dd7h?: string; ff7h?: number;
+  dd10h?: string; ff10h?: number;
+  dd13h?: string; ff13h?: number;
+  dd16h?: string; ff16h?: number;
+  dd19h?: string; ff19h?: number;
+  dd22h?: string; ff22h?: number;
+  // Mưa
+  R1h?: number; R7h?: number; R13h?: number; R19h?: number; Mua24h?: number;
+  R19_7?: number; "R7-19"?: number;
+  // Hiện tượng
+  W1h?: number; W4h?: number; W7h?: number; W10h?: number; W13h?: number; W16h?: number; W19h?: number; W22h?: number;
+  [key: string]: any;
+}
+
+export interface AlarmLevels {
+  TenTram: string;
+  BD1: number | null;
+  BD2: number | null;
+  BD3: number | null;
 }
 
 export interface StationMetadata {
@@ -16,7 +55,7 @@ export interface StationMetadata {
 export interface TBNNData {
   TenTram: string;
   Thang: number;
-  Ky: string; // 'MONTH', 'T1', 'T2', 'T3'
+  Ky: string; 
   Htb: number | null;
   Hmax: number | null;
   Hmin: number | null;
@@ -28,6 +67,15 @@ export interface FilterState {
   to: string;
   stationName: string;
   stationGroup: string;
+  factor?: MeteoFactor;
+}
+
+export enum MeteoFactor {
+  NHIET_AM = 'NHIET_AM',
+  KHI_AP = 'KHI_AP',
+  GIO = 'GIO',
+  MUA = 'MUA',
+  HIEN_TUONG = 'HIEN_TUONG'
 }
 
 export enum MenuType {
@@ -42,7 +90,8 @@ export enum SubMenuType {
   DAC_TRUNG = 'DAC_TRUNG',
   CHI_TIET = 'CHI_TIET',
   TONG_HOP = 'TONG_HOP',
-  TONG_HOP_NGAY = 'TONG_HOP_NGAY', // Thêm mới
+  TONG_HOP_NGAY = 'TONG_HOP_NGAY',
+  TONG_HOP_NGAY_KT = 'TONG_HOP_NGAY_KT', // Thêm mới
   KT_PHU_QUY = 'KT_PHU_QUY',
   TV_PHU_QUY = 'TV_PHU_QUY'
 }

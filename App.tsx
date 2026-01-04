@@ -5,55 +5,74 @@ import Header from './components/Header';
 import HydroDashboard from './components/HydroDashboard';
 import HydroSummary from './components/HydroSummary';
 import HydroGroupSummary from './components/HydroGroupSummary';
-import DailySynthesis from './components/DailySynthesis'; // Import mới
+import DailySynthesis from './components/DailySynthesis';
+import DailyMeteoSynthesis from './components/DailyMeteoSynthesis';
+import MeteoDashboard from './components/MeteoDashboard';
+import MeteoSummary from './components/MeteoSummary';
 import SetupGuide from './components/SetupGuide';
-import { MenuType, SubMenuType, StationMetadata, FilterState } from './types';
-import { fetchMetadata, trackVisit } from './services/dataService';
+import { MenuType, SubMenuType, StationMetadata, FilterState, MeteoFactor } from './types';
+import { fetchMetadata, fetchMeteoMetadata, trackVisit } from './services/dataService';
 import { isConfigured } from './supabaseClient';
 
 const App: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Mặc định mở
   const [activeMenu, setActiveMenu] = useState<MenuType>(MenuType.THUY_VAN);
   const [activeSubMenu, setActiveSubMenu] = useState<SubMenuType>(SubMenuType.CHI_TIET);
   const [metadata, setMetadata] = useState<StationMetadata[]>([]);
   const [hasConfig, setHasConfig] = useState(isConfigured());
   const [visitorCount, setVisitorCount] = useState<number>(0);
 
-  // State lọc chung để quản lý đồng bộ dropdown
   const [filters, setFilters] = useState<FilterState>({
     from: new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0],
     to: new Date().toISOString().split('T')[0],
     stationName: '',
-    stationGroup: ''
+    stationGroup: '',
+    factor: MeteoFactor.NHIET_AM
   });
 
   useEffect(() => {
     if (hasConfig) {
-      const load = async () => {
-        try {
-          // Track lượt truy cập
-          const count = await trackVisit();
-          setVisitorCount(count);
-
-          const data = await fetchMetadata();
-          setMetadata(data);
-          
-          // Khi mới load xong, nếu chưa có đài/trạm thì chọn cái đầu tiên
-          if (data.length > 0 && !filters.stationGroup) {
-            const firstItem = data[0];
-            setFilters(prev => ({
-              ...prev,
-              stationGroup: firstItem.TenDai || '',
-              stationName: firstItem.TenTram || ''
-            }));
-          }
-        } catch (e) {
-          console.error("Lỗi khởi tạo ứng dụng:", e);
-        }
-      };
-      load();
+      trackVisit().then(count => setVisitorCount(count));
     }
   }, [hasConfig]);
+
+  useEffect(() => {
+    if (!hasConfig) return;
+
+    const loadMetadata = async () => {
+      let data: StationMetadata[] = [];
+      try {
+        if (activeMenu === MenuType.KHI_TUONG) {
+          data = await fetchMeteoMetadata();
+        } else {
+          data = await fetchMetadata();
+        }
+        
+        setMetadata(data);
+
+        if (data.length > 0) {
+          const currentGroupExists = data.some(d => d.TenDai === filters.stationGroup);
+          const currentStationExists = data.some(d => d.TenTram === filters.stationName);
+          
+          if (!currentGroupExists || !currentStationExists) {
+             const firstItem = data[0];
+             setFilters(prev => ({
+               ...prev,
+               stationGroup: firstItem.TenDai || '',
+               stationName: firstItem.TenTram || ''
+             }));
+          }
+        } else {
+           setFilters(prev => ({ ...prev, stationGroup: '', stationName: '' }));
+        }
+
+      } catch (e) {
+        console.error("Lỗi tải danh sách trạm:", e);
+      }
+    };
+
+    loadMetadata();
+  }, [hasConfig, activeMenu]);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
@@ -90,20 +109,26 @@ const App: React.FC = () => {
       return <SetupGuide />;
     }
 
-    // Ghi chú tạm cho Khí tượng
     if (activeMenu === MenuType.KHI_TUONG) {
+      if (activeSubMenu === SubMenuType.CHI_TIET) {
+        return <MeteoDashboard 
+          stations={filteredStations} 
+          groups={availableGroups}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />;
+      }
+      if (activeSubMenu === SubMenuType.TONG_HOP_NGAY_KT) {
+        return <DailyMeteoSynthesis />;
+      }
+      if (activeSubMenu === SubMenuType.DAC_TRUNG) {
+        return <MeteoSummary />;
+      }
+      
       return (
         <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400 bg-white rounded-3xl border-2 border-dashed border-slate-100 m-6 shadow-sm">
-          <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 animate-pulse">
-            <svg className="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">Dữ liệu Khí tượng</h2>
-          <p className="text-sm font-bold text-blue-500 mt-2">CHƯA CÓ DỮ LIỆU - ĐANG TRONG QUÁ TRÌNH THIẾT LẬP BẢNG</p>
-          <div className="mt-8">
-             <span className="px-4 py-1.5 bg-slate-50 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">Ghi chú: Đang cấu hình Supabase</span>
-          </div>
+          <h2 className="text-xl font-bold text-slate-800 uppercase tracking-tight">Tính năng đang phát triển</h2>
+          <p className="text-sm font-bold text-blue-500 mt-2">{activeSubMenu}</p>
         </div>
       );
     }
@@ -123,7 +148,7 @@ const App: React.FC = () => {
     if (activeSubMenu === SubMenuType.TONG_HOP) {
       return <HydroGroupSummary />;
     }
-    if (activeSubMenu === SubMenuType.TONG_HOP_NGAY) { // Xử lý render menu mới
+    if (activeSubMenu === SubMenuType.TONG_HOP_NGAY) { 
       return <DailySynthesis />;
     }
 
@@ -144,9 +169,12 @@ const App: React.FC = () => {
     };
     const subNames: Record<string, string> = {
       [SubMenuType.CHI_TIET]: 'Số liệu chi tiết',
-      [SubMenuType.DAC_TRUNG]: 'Đặc trưng tháng',
+      [SubMenuType.DAC_TRUNG]: 'Số liệu đặc trưng',
       [SubMenuType.TONG_HOP]: 'Tổng hợp đài',
-      [SubMenuType.TONG_HOP_NGAY]: 'Tổng hợp ngày' // Thêm tên
+      [SubMenuType.TONG_HOP_NGAY]: 'Tổng hợp ngày',
+      [SubMenuType.TONG_HOP_NGAY_KT]: 'Tổng hợp ngày Khí tượng',
+      [SubMenuType.KT_PHU_QUY]: 'Số liệu Khí tượng Phú Quý',
+      [SubMenuType.TV_PHU_QUY]: 'Số liệu Hải văn Phú Quý'
     };
     return { 
       menu: names[activeMenu] || activeMenu, 

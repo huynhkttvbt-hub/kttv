@@ -11,11 +11,13 @@ import {
   ChevronDown, 
   ChevronRight,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 
 interface SidebarProps {
-  isOpen: boolean;
+  isOpen: boolean; 
   activeMenu: MenuType;
   activeSubMenu: SubMenuType;
   onMenuSelect: (menu: MenuType, sub: SubMenuType) => void;
@@ -23,13 +25,14 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, onMenuSelect, onToggle }) => {
-  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
-    [MenuType.KHI_TUONG]: true,
-    [MenuType.THUY_VAN]: true,
-    [MenuType.PHU_QUY]: false
-  });
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
 
-  const toggleExpand = (menu: string) => {
+  const toggleExpand = (e: React.MouseEvent, menu: string) => {
+    e.stopPropagation();
+    // Nếu sidebar đang đóng mà bấm vào menu có con, thì mở sidebar ra trước
+    if (!isOpen) {
+      onToggle();
+    }
     setExpandedMenus(prev => ({ ...prev, [menu]: !prev[menu] }));
   };
 
@@ -38,37 +41,58 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
     const isActive = activeMenu === type;
 
     return (
-      <div className="mb-2">
+      <div className="mb-1">
         <button
-          onClick={() => subMenus ? toggleExpand(type) : onMenuSelect(type, null as any)}
-          className={`w-full flex items-center justify-between p-3 rounded-lg transition-colors ${
-            isActive && !subMenus ? 'bg-blue-50 text-blue-600 font-semibold' : 'hover:bg-slate-100 text-slate-700'
+          onClick={(e) => {
+            if (subMenus) {
+              toggleExpand(e, type);
+            } else {
+              onMenuSelect(type, null as any);
+            }
+          }}
+          className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all duration-200 ${
+            isActive && !subMenus 
+              ? 'bg-blue-600 text-white shadow-md shadow-blue-100' 
+              : 'hover:bg-slate-50 text-slate-600 hover:text-blue-600'
           }`}
+          title={!isOpen ? label : ''}
         >
           <div className="flex items-center gap-3">
-            <Icon size={20} className={isActive ? 'text-blue-600' : 'text-slate-500'} />
-            {isOpen && <span className="text-sm font-medium">{label}</span>}
+            <div className={`shrink-0 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`}>
+              <Icon size={20} className={isActive && !subMenus ? 'text-white' : (isActive ? 'text-blue-600' : 'text-slate-400')} />
+            </div>
+            {isOpen && (
+              <span className="text-[13px] font-bold whitespace-nowrap transition-all duration-300 origin-left animate-fadeIn">
+                {label}
+              </span>
+            )}
           </div>
           {isOpen && subMenus && (
-            isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />
+            <div className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}>
+              <ChevronDown size={14} className="text-slate-400" />
+            </div>
           )}
         </button>
         
-        {isOpen && subMenus && isExpanded && (
-          <div className="ml-9 mt-1 space-y-1">
-            {subMenus.map((sub: any) => (
-              <button
-                key={sub.type}
-                onClick={() => onMenuSelect(type, sub.type)}
-                className={`w-full text-left p-2 text-xs rounded-md transition-colors ${
-                  activeMenu === type && activeSubMenu === sub.type
-                    ? 'bg-blue-100 text-blue-700 font-medium'
-                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-50'
-                }`}
-              >
-                {sub.label}
-              </button>
-            ))}
+        {isOpen && (
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            isExpanded ? 'max-h-64 opacity-100 mt-1' : 'max-h-0 opacity-0'
+          }`}>
+            <div className="ml-9 flex flex-col gap-1 border-l-2 border-slate-100 pl-2">
+              {subMenus?.map((sub: any) => (
+                <button
+                  key={sub.type}
+                  onClick={() => onMenuSelect(type, sub.type)}
+                  className={`w-full text-left py-1.5 px-3 text-[12px] font-medium rounded-lg transition-colors ${
+                    activeMenu === type && activeSubMenu === sub.type
+                      ? 'bg-blue-50 text-blue-700 font-bold'
+                      : 'text-slate-500 hover:text-blue-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {sub.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -76,29 +100,47 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
   };
 
   return (
-    <aside className={`${isOpen ? 'w-64' : 'w-20'} h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out z-20`}>
-      {/* Logo Section */}
-      <div className="p-4 border-b border-slate-100 flex flex-col items-center justify-center">
-        <div className="flex items-center gap-2">
-           {APP_LOGO}
+    <aside 
+      className={`fixed md:relative h-full bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out z-50 shadow-sm ${
+        isOpen ? 'w-[200px]' : 'w-[64px]'
+      }`}
+    >
+      {/* Top Header with Logo */}
+      <div className="h-[70px] flex items-center px-4 border-b border-slate-50 overflow-hidden">
+        <div className="flex items-center gap-2.5 shrink-0">
+           <div className="scale-75 origin-left">
+            {APP_LOGO}
+           </div>
            {isOpen && (
-             <div className="text-center leading-tight">
-               <h1 className="text-[10px] font-bold text-blue-900 tracking-tight">ĐÀI KHÍ TƯỢNG THUỶ VĂN</h1>
-               <h2 className="text-[10px] font-bold text-blue-900 tracking-tight">TỈNH LÂM ĐỒNG</h2>
+             <div className="text-left leading-none whitespace-nowrap animate-fadeIn">
+               <h1 className="text-[10px] font-black text-blue-900 tracking-tighter uppercase"></h1>
+               <h2 className="text-[12px] font-black text-blue-600 tracking-widest uppercase">KTTV Lâm Đồng</h2>
              </div>
            )}
         </div>
       </div>
 
-      {/* Menu Container */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
+      {/* Toggle Button Section - NEW POSITION */}
+      <div className="px-3 py-3 border-b border-slate-50 flex justify-center md:justify-end">
+        <button 
+          onClick={onToggle}
+          className="p-2 rounded-xl bg-slate-50 hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-all active:scale-90"
+          title={isOpen ? "Thu gọn sidebar" : "Mở rộng sidebar"}
+        >
+           {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+        </button>
+      </div>
+
+      {/* Menu Items */}
+      <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar overflow-x-hidden">
         <MenuItem 
           icon={CloudSun} 
           label="KHÍ TƯỢNG" 
           type={MenuType.KHI_TUONG}
           subMenus={[
+            { label: 'Số liệu chi tiết', type: SubMenuType.CHI_TIET },
+            { label: 'Tổng hợp ngày', type: SubMenuType.TONG_HOP_NGAY_KT },
             { label: 'Số liệu đặc trưng', type: SubMenuType.DAC_TRUNG },
-            { label: 'Số liệu chi tiết', type: SubMenuType.CHI_TIET }
           ]}
         />
         <MenuItem 
@@ -106,42 +148,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
           label="THUỶ VĂN" 
           type={MenuType.THUY_VAN}
           subMenus={[
-            { label: 'Tổng hợp theo ngày', type: SubMenuType.TONG_HOP_NGAY }, // Thêm menu này
-            { label: 'Tổng hợp theo đài', type: SubMenuType.TONG_HOP },
-            { label: 'Số liệu đặc trưng', type: SubMenuType.DAC_TRUNG },
-            { label: 'Số liệu chi tiết', type: SubMenuType.CHI_TIET }
+            { label: 'Số liệu chi tiết', type: SubMenuType.CHI_TIET },
+            { label: 'Tổng hợp ngày', type: SubMenuType.TONG_HOP_NGAY },
+            { label: 'Tổng hợp đài', type: SubMenuType.TONG_HOP },
+            { label: 'Đặc trưng tháng', type: SubMenuType.DAC_TRUNG }
           ]}
         />
-        <MenuItem 
-          icon={Waves} 
-          label="HẢI VĂN" 
-          type={MenuType.HAI_VAN}
-        />
-        <MenuItem 
-          icon={CloudRain} 
-          label="MƯA" 
-          type={MenuType.MUA}
-        />
+        <MenuItem icon={Waves} label="HẢI VĂN" type={MenuType.HAI_VAN} />
+        <MenuItem icon={CloudRain} label="MƯA" type={MenuType.MUA} />
         <MenuItem 
           icon={Anchor} 
-          label="TRẠM TĐ PHÚ QUÝ" 
+          label="TRẠM PHÚ QUÝ" 
           type={MenuType.PHU_QUY}
           subMenus={[
-            { label: 'Số liệu Khí tượng', type: SubMenuType.KT_PHU_QUY },
-            { label: 'Số liệu Hải văn', type: SubMenuType.TV_PHU_QUY }
+            { label: 'Khí tượng', type: SubMenuType.KT_PHU_QUY },
+            { label: 'Hải văn', type: SubMenuType.TV_PHU_QUY }
           ]}
         />
       </div>
 
-      {/* Collapse Trigger */}
-      <div className="p-4 border-t border-slate-100">
-        <button 
-          onClick={onToggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 transition-colors"
-        >
-          {isOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
-        </button>
-      </div>
+      {/* Bottom Footer Info (Optional) */}
+      {isOpen && (
+        <div className="p-4 border-t border-slate-50 text-center animate-fadeIn">
+          <p className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">© 2026 HUYNH KTTVLĐ</p>
+        </div>
+      )}
     </aside>
   );
 };
