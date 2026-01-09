@@ -92,7 +92,7 @@ const HydroChart: React.FC<HydroChartProps> = ({
     }
 
     // Khoảng đệm nhỏ (10cm) để đồ thị uốn lượn đẹp hơn khi không có báo động
-    const padding = 10;
+    const padding = 5;
     return [Math.floor(min - padding), Math.ceil(max + padding + 5)];
   };
 
@@ -107,11 +107,11 @@ const HydroChart: React.FC<HydroChartProps> = ({
   }
 
   return (
-    <div className="w-full h-[300px] relative mt-4">
+    <div className="w-full h-[280px] relative mt-2">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
-          margin={{ top: 10, right: 30, left: -10, bottom: 20 }}
+          margin={{ top: 10, right: 30, left: -20, bottom: 20 }}
         >
           <CartesianGrid
             strokeDasharray="3 3"

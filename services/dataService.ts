@@ -54,7 +54,7 @@ export const fetchMetadata = async (): Promise<StationMetadata[]> => {
   if (error) return [];
   const unique = Array.from(new Set((data || []).map((i: any) => JSON.stringify(i))))
     .map((s: string) => JSON.parse(s)) as StationMetadata[];
-  return unique.sort((a, b) => a.TenTram.localeCompare(b.TenTram));
+  return unique.sort((a, b) => (a.TenTram || '').localeCompare(b.TenTram || ''));
 };
 
 export const fetchMeteoMetadata = async (): Promise<StationMetadata[]> => {
@@ -71,7 +71,20 @@ export const fetchMeteoMetadata = async (): Promise<StationMetadata[]> => {
     TenTram: i.Tram,
     TenDai: i.Dai
   })))).map((s: string) => JSON.parse(s)) as StationMetadata[];
-  return unique.sort((a, b) => a.TenTram.localeCompare(b.TenTram));
+  return unique.sort((a, b) => (a.TenTram || '').localeCompare(b.TenTram || ''));
+};
+
+export const fetchMarineData = async (from: string, to: string): Promise<MeteoData[]> => {
+  const marineStations = ['48889', '48918', '48916', '48917', '48919'];
+  const { data, error } = await supabase
+    .from('dulieu_khituong')
+    .select('*')
+    .in('MaTram', marineStations)
+    .gte('Ngay', from)
+    .lte('Ngay', to)
+    .order('Ngay', { ascending: true });
+  if (error) throw error;
+  return (data || []).map(normalizeMeteoData);
 };
 
 export const fetchAlarmLevels = async (station: string): Promise<AlarmLevels | null> => {
@@ -132,14 +145,9 @@ export const fetchTBNN = async (station: string, month: number, period: string):
   return { TenTram: data.tentram, Thang: data.thang, Ky: data.ky, Htb: data.htb, Hmax: data.hmax, Hmin: data.hmin, Rtb: data.rtb } as TBNNData;
 };
 
-/**
- * CẢI TIẾN TOÀN DIỆN: Cập nhật an toàn với Schema-Aware
- */
 export const updateHydroData = async (payload: { TenTram: string, TenDai: string, Ngay: string, column: string, value: string }): Promise<boolean> => {
   try {
     const { TenTram, TenDai, Ngay, column, value } = payload;
-    
-    // 1. Tìm bản ghi hiện tại - Thử PascalCase trước
     let { data: existing, error: findError } = await supabase
       .from('so_lieu_thuy_van')
       .select('*')
@@ -147,7 +155,6 @@ export const updateHydroData = async (payload: { TenTram: string, TenDai: string
       .eq('Ngay', Ngay)
       .maybeSingle();
 
-    // Nếu lỗi "Cột không tồn tại", thử tìm bằng lowercase
     if (findError && findError.code === '42703') {
       const res = await supabase
         .from('so_lieu_thuy_van')
@@ -162,20 +169,12 @@ export const updateHydroData = async (payload: { TenTram: string, TenDai: string
     if (isNaN(valNum)) throw new Error("Giá trị nhập vào không phải là số.");
 
     if (existing) {
-      // TRƯỜNG HỢP UPDATE: Chỉ cập nhật các phím đang tồn tại trong bản ghi
       const existingKeys = Object.keys(existing);
-      
-      // Tìm key chính xác cho cột cần update (ví dụ người dùng chọn 'Hmax' nhưng DB có 'hmax')
       const targetKey = existingKeys.find(k => k.toLowerCase() === column.toLowerCase()) || column;
-      
       let updateObj: any = { [targetKey]: valNum };
-
-      // Tính toán lại Hmax, Hmin, Htb dựa trên các phím giờ thực tế trong DB
       const hourlyKeysInDb = existingKeys.filter(k => 
         HOURLY_COLUMNS.map(hc => hc.toLowerCase()).includes(k.toLowerCase())
       );
-
-      // Tạo một bản sao dữ liệu để tính toán cực trị
       const tempData = { ...existing, [targetKey]: valNum };
       const hourlyValues = hourlyKeysInDb
         .map(k => parseFloat(String(tempData[k] || '').replace(',', '.')))
@@ -185,39 +184,30 @@ export const updateHydroData = async (payload: { TenTram: string, TenDai: string
         const hMax = Math.max(...hourlyValues);
         const hMin = Math.min(...hourlyValues);
         const hTb = Math.round(hourlyValues.reduce((a, b) => a + b, 0) / hourlyValues.length);
-
-        // Tìm phím đặc trưng tương ứng trong DB
         const kMax = existingKeys.find(k => k.toLowerCase() === 'hmax') || 'Hmax';
         const kMin = existingKeys.find(k => k.toLowerCase() === 'hmin') || 'Hmin';
         const kTb = existingKeys.find(k => k.toLowerCase() === 'htb') || 'Htb';
-
         updateObj[kMax] = hMax;
         updateObj[kMin] = hMin;
         updateObj[kTb] = hTb;
       }
-
       const { error: updErr } = await supabase
         .from('so_lieu_thuy_van')
         .update(updateObj)
         .eq('id', existing.id);
-        
       if (updErr) throw updErr;
     } else {
-      // TRƯỜNG HỢP INSERT: Nếu chưa có dữ liệu, tạo bản ghi mới (mặc định dùng Pascal cho an toàn nhất)
       const insertObj: any = {
         TenTram, TenDai, Ngay,
         tentram: TenTram, tendai: TenDai, ngay: Ngay,
         [column]: valNum,
         [column.toLowerCase()]: valNum
       };
-      
       const { error: insErr } = await supabase
         .from('so_lieu_thuy_van')
         .insert([insertObj]);
-        
       if (insErr) throw insErr;
     }
-
     return true;
   } catch (err: any) {
     console.error("Lỗi updateHydroData:", err.message || err);

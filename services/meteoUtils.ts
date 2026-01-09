@@ -26,7 +26,7 @@ export const WW_CODES: Record<number, string> = {
   44: "Sương Mù",
   46: "Sương Mù",
   47: "Sương Mù",
-  45: "Sương mù dày",
+  45: "Sương mù",
   60: "Mưa nhỏ",
   61: "Mưa vừa",
   63: "Mưa to",
@@ -45,7 +45,7 @@ export const WW_CODES: Record<number, string> = {
  */
 export const PAST_WEATHER_CODES: Record<number, string> = {
   0: "Ít mây",
-  1: "Mây thay đổi",
+  1: "Có mây",
   2: "Nhiều mây",
   3: "Bão bụi",
   4: "Sương mù",
@@ -57,6 +57,21 @@ export const PAST_WEATHER_CODES: Record<number, string> = {
 };
 
 /**
+ * Bảng mã quy ước độ cao sóng (Hsong)
+ * Quy ước: Mã số -> Khoảng mét thực tế
+ */
+export const MARINE_WAVE_CODES: Record<number, string> = {
+  0: "0 - 0.25",
+  1: "0.25 - 0.75",
+  2: "0.75 - 1.25",
+  3: "1.25 - 1.75",
+  4: "1.75 - 2.25",
+  5: "1.75 - 2.25",
+  6: "2.25 - 2.75",
+  7: "2.75 - 3.25",
+};
+
+/**
  * Hàm chuyển đổi mã số sang tên hiện tượng
  * @param isPast Nếu true sẽ tra bảng W1, W2. Nếu false sẽ tra bảng WW.
  */
@@ -65,4 +80,13 @@ export const translateWeatherCode = (code: any, isPast: boolean = false): string
   const numericCode = Number(code);
   const dictionary = isPast ? PAST_WEATHER_CODES : WW_CODES;
   return dictionary[numericCode] || `${code}`;
+};
+
+/**
+ * Hàm chuyển đổi mã độ cao sóng sang khoảng mét thực tế
+ */
+export const translateWaveCode = (code: any): string => {
+  if (code === null || code === undefined || code === '') return '-';
+  const numericCode = Number(code);
+  return MARINE_WAVE_CODES[numericCode] || `${code}`;
 };

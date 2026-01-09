@@ -290,7 +290,7 @@ const HydroGroupSummary: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6 animate-fadeIn w-full">
+    <div className="p-4 md:p-6 space-y-6 animate-fadeIn max-w-[1400px] mx-auto">
       {/* Filter Bar */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-wrap items-end gap-4">
         {/* ... (Keep existing filters) ... */}
@@ -321,9 +321,9 @@ const HydroGroupSummary: React.FC = () => {
             className="w-full bg-blue-50/50 border border-blue-100 text-blue-800 rounded-lg p-2.5 text-[11px] font-black outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all"
           >
             <option value="MONTH">Cả tháng</option>
-            <option value="T1">Tuần 1 (1-10)</option>
-            <option value="T2">Tuần 2 (11-20)</option>
-            <option value="T3">Tuần 3 (21-Hết)</option>
+            <option value="T1">Tuần 1</option>
+            <option value="T2">Tuần 2</option>
+            <option value="T3">Tuần 3 </option>
             <option value="DAY">1 Ngày</option>
             <option value="WEEK">1 Tuần (từ ngày chọn)</option>
           </select>

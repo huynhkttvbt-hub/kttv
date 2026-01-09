@@ -163,7 +163,7 @@ const HydroDashboard: React.FC<Props> = ({
           <div className="p-5 flex flex-col h-full">
             <div className="flex items-center justify-between mb-4 px-1">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
+                <div className="w-5 h-5 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shadow-inner">
                   <LineChart size={15} />
                 </div>
                 <div>
@@ -219,15 +219,15 @@ const HydroDashboard: React.FC<Props> = ({
         {/* Quick Stats Summary - CHIẾM 1/6 */}
         <MainCard className="lg:w-1/6">
           <div className="p-5 flex flex-col h-full">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-4 h-4 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-inner">
                 <Info size={15} />
               </div>
               <div>
-                <h4 className="text-xs font-black text-slate-600 uppercase tracking-tight">
-                  Đặc trưng thời kỳ
-                </h4>
-                <p className="text-[8px] text-indigo-400 font-black uppercase tracking-widest">
+                <h3 className="text-xs font-black text-slate-600 uppercase tracking-tight">
+                  Đặc trưng
+                </h3>
+                <p className="text-[9px] text-indigo-500 font-black uppercase tracking-widest">
                   Tóm tắt trị số
                 </p>
               </div>
@@ -246,11 +246,11 @@ const HydroDashboard: React.FC<Props> = ({
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 group hover:border-red-200 transition-all">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-                        <Waves size={16} />
+                      <div className="w-2 h-2 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+                        <Waves size={10} />
                       </div>
                       <span className="text-[10px] font-black text-slate-500 uppercase">
-                        Mực nước Max
+                        Hmax
                       </span>
                     </div>
                     <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1">
@@ -266,14 +266,14 @@ const HydroDashboard: React.FC<Props> = ({
                 </div>
 
                 {/* Hmin Card */}
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 group hover:border-blue-200 transition-all">
+                <div className="bg-slate-50 rounded-2xl p-1 border border-slate-50 group hover:border-blue-100 transition-all">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
                         <ArrowDown size={10} />
                       </div>
                       <span className="text-[10px] font-black text-slate-500 uppercase">
-                        Mực nước Min
+                        Hmin
                       </span>
                     </div>
                     <span className="text-[9px] font-bold text-slate-400 flex items-center gap-1">
@@ -290,9 +290,9 @@ const HydroDashboard: React.FC<Props> = ({
 
                 {/* Rain Card */}
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 group hover:border-emerald-200 transition-all">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                      <CloudRain size={16} />
+                  <div className="flex items-center gap-1 mb-1">
+                    <div className="w-2 h-2 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                      <CloudRain size={10} />
                     </div>
                     <span className="text-[10px] font-black text-slate-500 uppercase">
                       Tổng lượng mưa
@@ -308,7 +308,7 @@ const HydroDashboard: React.FC<Props> = ({
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-slate-300 opacity-40">
-                <Info size={30} strokeWidth={1} />
+                <Info size={20} strokeWidth={1} />
                 <span className="text-[10px] font-black uppercase mt-2">
                   Chưa có dữ liệu
                 </span>
@@ -320,12 +320,12 @@ const HydroDashboard: React.FC<Props> = ({
 
       {/* Table Section - CHIẾM 100% NHƯ CŨ */}
       <MainCard>
-        <div className="px-5 py-3.5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+        <div className="px-2 py-2 bg-slate-50/50 border-b border-slate-200 flex items-center justify-between">
           <h3 className="text-[10px] font-black text-slate-600 uppercase flex items-center gap-2 tracking-[0.1em]">
-            <LayoutGrid size={10} className="text-blue-500" /> Chi tiết số liệu
+            <LayoutGrid size={15} className="text-blue-500" /> Chi tiết số liệu
             quan trắc
           </h3>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <span className="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded border border-blue-100 uppercase">
               {filters.from} - {filters.to}
             </span>

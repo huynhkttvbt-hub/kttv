@@ -23,7 +23,7 @@ export interface MeteoData {
   // Khí áp
   Pt1h?: number; Pt4h?: number; Pt7h?: number; Pt10h?: number; Pt13h?: number; Pt16h?: number; Pt19h?: number; Pt22h?: number; PtTB?: number;
   Pb1h?: number; Pb4h?: number; Pb7h?: number; Pb10h?: number; Pb13h?: number; Pb16h?: number; Pb19h?: number; Pb22h?: number; PbTB?: number;
-  // Gió
+  // Gió Obs
   dd1h?: string; ff1h?: number;
   dd4h?: string; ff4h?: number;
   dd7h?: string; ff7h?: number;
@@ -32,9 +32,17 @@ export interface MeteoData {
   dd16h?: string; ff16h?: number;
   dd19h?: string; ff19h?: number;
   dd22h?: string; ff22h?: number;
+  // Gió Mạnh (Max)
+  Dmax1h?: string; Fmax1h?: number;
+  Dmax7h?: string; Fmax7h?: number;
+  Dmax13h?: string; Fmax13h?: number;
+  Dmax19h?: string; Fmax19h?: number;
   // Mưa
   R1h?: number; R7h?: number; R13h?: number; R19h?: number; Mua24h?: number;
   R19_7?: number; "R7-19"?: number;
+  // Hải văn (Mới)
+  Tnuoc1h?: number; Tnuoc7h?: number; Tnuoc13h?: number; Tnuoc19h?: number;
+  Hsong1h?: number; Hsong7h?: number; Hsong13h?: number; Hsong19h?: number;
   // Hiện tượng
   W1h?: number; W4h?: number; W7h?: number; W10h?: number; W13h?: number; W16h?: number; W19h?: number; W22h?: number;
   [key: string]: any;
@@ -62,12 +70,33 @@ export interface TBNNData {
   Rtb: number | null;
 }
 
+export interface MeteoStationSummary {
+  TenTram: string;
+  Ttb: number;
+  Tx: number;
+  NgayTx: string;
+  Tn: number;
+  NgayTn: string;
+  RainSum: number;
+  RainDays: number;
+  RainMax: number;
+  NgayRainMax: string;
+  Utb: number;
+  Umin: number;
+  NgayUmin: string;
+  TbnnTemp: number | null;
+  TbnnRain: number | null;
+  CompareTempDiff: number | null;
+  CompareRainPerc: number | null;
+  HasData: boolean;
+}
+
 export interface FilterState {
   from: string;
   to: string;
   stationName: string;
   stationGroup: string;
-  factor?: MeteoFactor;
+  factor?: MeteoFactor | MarineFactor;
 }
 
 export enum MeteoFactor {
@@ -78,12 +107,18 @@ export enum MeteoFactor {
   HIEN_TUONG = 'HIEN_TUONG'
 }
 
+export enum MarineFactor {
+  NHIET_NUOC = 'NHIET_NUOC',
+  SONG = 'SONG'
+}
+
 export enum MenuType {
   KHI_TUONG = 'KHI_TUONG',
   THUY_VAN = 'THUY_VAN',
   MUA = 'MUA',
   PHU_QUY = 'PHU_QUY',
-  HAI_VAN = 'HAI_VAN'
+  HAI_VAN = 'HAI_VAN',
+  XU_THE = 'XU_THE'
 }
 
 export enum SubMenuType {
@@ -91,9 +126,11 @@ export enum SubMenuType {
   CHI_TIET = 'CHI_TIET',
   TONG_HOP = 'TONG_HOP',
   TONG_HOP_NGAY = 'TONG_HOP_NGAY',
-  TONG_HOP_NGAY_KT = 'TONG_HOP_NGAY_KT', // Thêm mới
+  TONG_HOP_NGAY_KT = 'TONG_HOP_NGAY_KT',
   KT_PHU_QUY = 'KT_PHU_QUY',
-  TV_PHU_QUY = 'TV_PHU_QUY'
+  TV_PHU_QUY = 'TV_PHU_QUY',
+  Xuthe_Nhiet = 'Xuthe_Nhiet',
+  Xuthe_Mua = 'Xuthe_Mua'
 }
 
 export const HOURLY_COLUMNS = [
