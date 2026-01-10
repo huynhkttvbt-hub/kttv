@@ -149,7 +149,7 @@ const DailyMeteoSynthesis: React.FC = () => {
       <FilterContainer>
         <div className="flex flex-col gap-1.5 w-[180px]">
           <label className="text-xs font-bold text-blue-500 uppercase flex items-center gap-1 ml-1">
-            <Layers size={12} /> Đài Khí Tượng
+            <Layers size={12} /> Đài
           </label>
           <select
             value={selectedGroup}
