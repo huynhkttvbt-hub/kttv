@@ -48,8 +48,8 @@ const MeteoDashboard: React.FC<Props> = ({ stations, groups, filters, onFilterCh
   const handleExportExcel = () => {
     if (data.length === 0) return alert('Không có dữ liệu!');
     
-    // Fix: Using any[] for exportData to allow mapped object transformations for Excel
-    let exportData: any[] = data;
+    let exportData: any[] = [];
+    
     if (filters.factor === MeteoFactor.GIO) {
       exportData = data.map(d => ({
         'Ngày': d.Ngay,
@@ -66,6 +66,16 @@ const MeteoDashboard: React.FC<Props> = ({ stations, groups, filters, onFilterCh
         'Dmax13h': d.Dmax13h, 'Fmax13h': d.Fmax13h,
         'Dmax19h': d.Dmax19h, 'Fmax19h': d.Fmax19h,
       }));
+    } else if (filters.factor === MeteoFactor.MUA) {
+      exportData = data.map(d => ({
+        'Ngày': d.Ngay,
+        'R1h': d.R1h, 'R7h': d.R7h, 'R13h': d.R13h, 'R19h': d.R19h,
+        'Mưa Đêm (R19-7)': d.R19_7,
+        'Mưa Ngày (R7-19)': d.R7_19,
+        'Mưa 24h': d.Mua24h
+      }));
+    } else {
+      exportData = data;
     }
 
     const ws = XLSX.utils.json_to_sheet(exportData);
@@ -74,7 +84,6 @@ const MeteoDashboard: React.FC<Props> = ({ stations, groups, filters, onFilterCh
     XLSX.writeFile(wb, `KhiTuong_${filters.stationName}_${filters.factor}.xlsx`);
   };
 
-  // Fix: Accept both MeteoFactor and MarineFactor as input
   const getFactorLabel = (f?: MeteoFactor | MarineFactor) => {
     switch (f) {
       case MeteoFactor.NHIET_AM: return "Nhiệt độ - Ẩm độ";
@@ -121,7 +130,6 @@ const MeteoDashboard: React.FC<Props> = ({ stations, groups, filters, onFilterCh
             </div>
             
             <div className="w-full">
-              {/* Fix: Explicitly cast to MeteoFactor as this dashboard only handles meteo types */}
               <MeteoChart data={data} factor={(filters.factor as MeteoFactor) || MeteoFactor.NHIET_AM} />
             </div>
           </div>
@@ -142,7 +150,6 @@ const MeteoDashboard: React.FC<Props> = ({ stations, groups, filters, onFilterCh
             </div>
           </div>
           <div className="p-2">
-            {/* Fix: Explicitly cast to MeteoFactor as this dashboard only handles meteo types */}
             <MeteoTable data={data} loading={loading} factor={(filters.factor as MeteoFactor) || MeteoFactor.NHIET_AM} />
           </div>
         </MainCard>
