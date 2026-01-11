@@ -151,7 +151,7 @@ const DailySynthesis: React.FC = () => {
       <FilterContainer>
         <div className="flex flex-col gap-1.5 w-[160px]">
           <label className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1 ml-1">
-            <Layers size={10} /> Đài Khí Tượng
+            <Layers size={10} /> Đài
           </label>
           <select
             value={selectedGroup}
