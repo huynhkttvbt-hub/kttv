@@ -39,7 +39,7 @@ export interface MeteoData {
   Dmax19h?: string; Fmax19h?: number;
   // Mưa
   R1h?: number; R7h?: number; R13h?: number; R19h?: number; Mua24h?: number;
-  R19_7?: number; "R7-19"?: number;
+  R19_7?: number; R7_19?: number; "R7-19"?: number;
   // Hải văn (Mới)
   Tnuoc1h?: number; Tnuoc7h?: number; Tnuoc13h?: number; Tnuoc19h?: number;
   Hsong1h?: number; Hsong7h?: number; Hsong13h?: number; Hsong19h?: number;
@@ -127,6 +127,7 @@ export enum SubMenuType {
   TONG_HOP = 'TONG_HOP',
   TONG_HOP_NGAY = 'TONG_HOP_NGAY',
   TONG_HOP_NGAY_KT = 'TONG_HOP_NGAY_KT',
+  NHIET_DO = 'NHIET_DO',
   KT_PHU_QUY = 'KT_PHU_QUY',
   TV_PHU_QUY = 'TV_PHU_QUY',
   Xuthe_Nhiet = 'Xuthe_Nhiet',

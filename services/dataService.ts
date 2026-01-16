@@ -115,6 +115,24 @@ export const fetchMeteoData = async (filters: FilterState): Promise<MeteoData[]>
   return data ? data.map(normalizeMeteoData) : [];
 };
 
+export const fetchMeteoDataByGroup = async (group: string, from: string, to: string, stationNames: string[] | null = null): Promise<MeteoData[]> => {
+  let query = supabase.from('dulieu_khituong')
+    .select('*')
+    .gte('Ngay', from)
+    .lte('Ngay', to);
+
+  // Nếu có danh sách trạm cụ thể thì lọc theo list đó, ngược lại lọc theo tên Đài
+  if (stationNames && stationNames.length > 0) {
+    query = query.in('Tram', stationNames);
+  } else if (group) {
+    query = query.eq('Dai', group);
+  }
+
+  const { data, error } = await query.order('Ngay', { ascending: true });
+  if (error) throw error;
+  return data ? data.map(normalizeMeteoData) : [];
+};
+
 export const fetchDailyData = async (date: string): Promise<HydroData[]> => {
   if (!date) return [];
   let { data, error } = await supabase.from('so_lieu_thuy_van').select('*').eq('Ngay', date).order('TenTram', { ascending: true });
