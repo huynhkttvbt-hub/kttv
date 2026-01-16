@@ -106,6 +106,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
     >
       <div className="h-[70px] flex items-center px-4 border-b border-slate-50 overflow-hidden">
         <div className="flex items-center gap-2.5 shrink-0">
+<<<<<<< HEAD
            <div className="scale-75 origin-left">
             {APP_LOGO}
            </div>
@@ -115,6 +116,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
                <h2 className="text-[12px] font-black text-blue-600 tracking-widest uppercase"></h2>
              </div>
            )}
+=======
+          <div className="scale-75 origin-left">{APP_LOGO}</div>
+          {isOpen && (
+            <div className="text-left leading-none whitespace-nowrap animate-fadeIn">
+              <h1 className="text-[10px] font-black text-blue-900 tracking-tighter uppercase"></h1>
+              <h2 className="text-[12px] font-black text-blue-600 tracking-widest uppercase">
+              </h2>
+            </div>
+          )}
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
         </div>
       </div>
 

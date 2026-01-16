@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchMeteoMetadata, fetchTBNN } from '../services/dataService';
@@ -7,6 +8,16 @@ import { Calendar, Layers, Clock, Thermometer, Droplets, CloudRain, TrendingUp, 
 import { FilterContainer, MainCard, PageHeader, LoadingState, ActionButtons, EmptyState, ErrorBanner } from './Shared';
 import * as XLSX from 'xlsx';
 
+=======
+import React, { useState, useEffect, useMemo } from 'react';
+import { fetchMeteoMetadata, fetchTBNN } from '../services/dataService';
+import { supabase } from '../supabaseClient';
+import { MeteoData, StationMetadata, MeteoStationSummary } from '../types';
+import { Calendar, Layers, Clock, Thermometer, Droplets, CloudRain, TrendingUp, TrendingDown, Minus, Calculator } from 'lucide-react';
+import { FilterContainer, MainCard, PageHeader, LoadingState, ActionButtons, EmptyState, ErrorBanner } from './Shared';
+import * as XLSX from 'xlsx';
+
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
 type PeriodType = 'MONTH' | 'T1' | 'T2' | 'T3';
 
 const MeteoSummary: React.FC = () => {
@@ -53,6 +64,7 @@ const MeteoSummary: React.FC = () => {
         .gte('Ngay', startDate)
         .lte('Ngay', endDate);
 
+      // Fix: Handle supabase errors properly and ensure meteoData is treated as array
       if (meteoError) throw meteoError;
       const meteoRows = (meteoData as any[]) || [];
 
@@ -63,10 +75,16 @@ const MeteoSummary: React.FC = () => {
         .eq('ky', period);
       const tbnnRows = (tbnnData as any[]) || [];
 
+<<<<<<< HEAD
       // Sửa lỗi forEach: Ép kiểu rõ ràng cho groupsToProcess
       const groupsToProcess = (selectedGroup ? [selectedGroup] : availableGroups) as string[];
+=======
+      // Fix: Explicitly handle potential unknown types when calculating groupsToProcess
+      const groupsToProcess = (selectedGroup ? [selectedGroup] : (availableGroups as string[])) || [];
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
       const finalResult: Record<string, MeteoStationSummary[]> = {};
 
+      // Fix: Call forEach on a typed array
       groupsToProcess.forEach((groupName: string) => {
         const stationMetas = metadata.filter(m => m.TenDai === groupName);
         const summaries: MeteoStationSummary[] = stationMetas.map(meta => {
@@ -76,15 +94,23 @@ const MeteoSummary: React.FC = () => {
           let rSum = 0, rMax = -Infinity, ngayRMax = '-', rDays = 0;
           let uSum = 0, uCount = 0, uMin = Infinity, ngayUMin = '-';
 
+<<<<<<< HEAD
           rows.forEach((r: any) => {
+=======
+          rows.forEach(r => {
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
             const nTB = Number(r.NhietTB ?? r.nhiettb);
             const nTx = Number(r.NhietTx ?? r.nhiettx);
             const nTn = Number(r.NhietTn ?? r.nhiettn);
             const r24 = Number(r.Mua24h ?? r.mua24h);
             const aTB = Number(r.AmTB ?? r.amtb);
+<<<<<<< HEAD
             
             // Đảm bảo ngay luôn là string để không lỗi khi gán vào NgayTn
             const ngay = String(r.Ngay ?? r.ngay ?? '-');
+=======
+            const ngay = r.Ngay ?? r.ngay;
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
             
             const uHours = ['1h', '4h', '7h', '10h', '13h', '16h', '19h', '22h'];
             let rowUMin = Infinity;
@@ -98,11 +124,15 @@ const MeteoSummary: React.FC = () => {
             if (!isNaN(nTB)) { tSum += nTB; tCount++; }
             if (!isNaN(nTx) && nTx > tx) { tx = nTx; ngayTx = ngay; }
             if (!isNaN(nTn) && nTn < tn) { tn = nTn; ngayTn = ngay; }
+<<<<<<< HEAD
             if (!isNaN(r24)) { 
               rSum += r24; 
               if (r24 > 0) rDays++; 
               if (r24 > rMax) { rMax = r24; ngayRMax = ngay; } 
             }
+=======
+            if (!isNaN(r24)) { rSum += r24; if (r24 > 0) rDays++; if (r24 > rMax) { rMax = r24; ngayRMax = ngay; } }
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
             if (!isNaN(aTB)) { uSum += aTB; uCount++; }
             if (!isNaN(rowUMin) && rowUMin < uMin) { uMin = rowUMin; ngayUMin = ngay; }
           });
@@ -244,7 +274,11 @@ const MeteoSummary: React.FC = () => {
               {loading ? (
                 <tr><td colSpan={18}><LoadingState /></td></tr>
               ) : Object.keys(processedData).length > 0 ? (
+<<<<<<< HEAD
                 Object.entries(processedData).map(([group, stations]) => (
+=======
+                (Object.entries(processedData) as [string, MeteoStationSummary[]][]).map(([group, stations]) => (
+>>>>>>> 120d3ae5a591056c914629f173d33a88a361258e
                   <React.Fragment key={group}>
                     <tr className="bg-slate-100/60">
                       <td colSpan={18} className="p-2.5 font-bold text-slate-800 uppercase text-[10px] md:text-xs border border-slate-300 sticky left-0 z-20 bg-slate-200 shadow-[1px_0_0_0_#cbd5e1] pl-3">
