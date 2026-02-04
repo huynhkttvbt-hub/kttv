@@ -24,16 +24,15 @@ const getEnv = (name: string): string | undefined => {
   return undefined;
 };
 
-// Sử dụng Key người dùng cung cấp làm giá trị mặc định nếu không có biến môi trường
-const supabaseUrl = getEnv('VITE_SUPABASE_URL') || 'https://spwahrmekpickgkeqtbd.supabase.co';
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwd2Focm1la3BpY2tna2VxdGJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxOTk1NDUsImV4cCI6MjA4MDc3NTU0NX0.mj2CA8G6L9NsqW786yzMhQx2_CbxRkIU1xnGRq6lkCc';
+// Sử dụng Key từ biến môi trường
+const supabaseUrl = getEnv('VITE_SUPABASE_URL') || '';
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || '';
 
 // Kiểm tra cấu hình đã đầy đủ chưa
 export const isConfigured = () => {
   return !!supabaseUrl && 
          !!supabaseAnonKey && 
-         supabaseUrl !== 'https://placeholder.supabase.co' && 
-         !supabaseUrl.includes('your-project');
+         supabaseUrl !== 'https://placeholder.supabase.co';
 };
 
 // Khởi tạo client.

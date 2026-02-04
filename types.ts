@@ -43,9 +43,39 @@ export interface MeteoData {
   // Hải văn (Mới)
   Tnuoc1h?: number; Tnuoc7h?: number; Tnuoc13h?: number; Tnuoc19h?: number;
   Hsong1h?: number; Hsong7h?: number; Hsong13h?: number; Hsong19h?: number;
+  // Hải văn - Mực nước (Mới update)
+  Hnuoc1h?: number; Hnuoc7h?: number; Hnuoc13h?: number; Hnuoc19h?: number;
   // Hiện tượng
   W1h?: number; W4h?: number; W7h?: number; W10h?: number; W13h?: number; W16h?: number; W19h?: number; W22h?: number;
   [key: string]: any;
+}
+
+export interface ClimData {
+  id: number;
+  Dai: string;
+  Tram: string;
+  Ngay: string; // Dùng để lọc năm
+  Thang: number;
+  // Nhiệt độ
+  Ttb: number;
+  Txtb: number;
+  Tntb: number;
+  Tx: number;
+  NgayTx: string;
+  Tn: number;
+  NgayTn: string;
+  // Ẩm độ
+  AmTb: number;
+  Umin: number;
+  NgayUmin: string;
+  // Bốc hơi & Nắng
+  BocHoi: number;
+  Nang: number;
+  // Mưa
+  TongMua: number;
+  SoNgayMua: number;
+  Rx: number;
+  NgayRx: string;
 }
 
 export interface AlarmLevels {
@@ -109,7 +139,8 @@ export enum MeteoFactor {
 
 export enum MarineFactor {
   NHIET_NUOC = 'NHIET_NUOC',
-  SONG = 'SONG'
+  SONG = 'SONG',
+  MUC_NUOC = 'MUC_NUOC'
 }
 
 export enum MenuType {
@@ -131,7 +162,8 @@ export enum SubMenuType {
   KT_PHU_QUY = 'KT_PHU_QUY',
   TV_PHU_QUY = 'TV_PHU_QUY',
   Xuthe_Nhiet = 'Xuthe_Nhiet',
-  Xuthe_Mua = 'Xuthe_Mua'
+  Xuthe_Mua = 'Xuthe_Mua',
+  CLIM = 'CLIM'
 }
 
 export const HOURLY_COLUMNS = [

@@ -98,7 +98,7 @@ const DailySynthesis: React.FC = () => {
     <div className="p-4 md:p-6 space-y-6 animate-fadeIn max-w-[1600px] mx-auto">
       <FilterContainer>
         <div className="flex flex-col gap-1.5 w-[160px]">
-           <label className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1 ml-1"><Layers size={10} /> Đài</label>
+           <label className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1 ml-1"><Layers size={10} /> Đài </label>
            <select value={selectedGroup} onChange={(e) => setSelectedGroup(e.target.value)} className="w-full bg-blue-50/50 border border-blue-100 rounded-lg p-2.5 text-[11px] font-black text-blue-800 outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer">
              <option value="">-- Tất cả --</option>
              {availableGroups.map(g => <option key={g} value={g}>{g}</option>)}
@@ -117,7 +117,7 @@ const DailySynthesis: React.FC = () => {
       </FilterContainer>
 
       <MainCard>
-        <PageHeader title="Tổng hợp ngày" subtitle={`${selectedGroup || 'Tất cả các đài'} • ${date.split('-').reverse().join('/')}`} icon={Clock} />
+        <PageHeader title="Tổng hợp số liệu ngày" subtitle={`${selectedGroup || 'Tất cả các đài'} • ${date.split('-').reverse().join('/')}`} icon={Clock} />
         
         <div className="p-0 overflow-x-auto">
            <table className="w-full text-left border-collapse border-slate-300">
@@ -169,7 +169,7 @@ const DailySynthesis: React.FC = () => {
                      </React.Fragment>
                    ))
                 ) : (
-                   <tr><td colSpan={13}><EmptyState message="Không có dữ liệu trạm nào" /></td></tr>
+                   <tr><td colSpan={13}><EmptyState message="Không có dữ liệu" /></td></tr>
                 )}
               </tbody>
            </table>

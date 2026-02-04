@@ -1,6 +1,6 @@
 
 import { supabase } from '../supabaseClient';
-import { HydroData, MeteoData, FilterState, StationMetadata, TBNNData, AlarmLevels, HOURLY_COLUMNS } from '../types';
+import { HydroData, MeteoData, ClimData, FilterState, StationMetadata, TBNNData, AlarmLevels, HOURLY_COLUMNS } from '../types';
 
 // Helper to normalize keys to PascalCase if DB returns lowercase
 const normalizeHydroData = (item: any): HydroData => {
@@ -25,6 +25,12 @@ const normalizeMeteoData = (item: any): MeteoData => {
   if (item.ngay) result.Ngay = item.ngay;
   if (item.matram) result.MaTram = item.matram;
 
+  // Map các trường Hải văn (nếu DB trả về chữ thường)
+  if (item.hnuoc1h !== undefined) result.Hnuoc1h = item.hnuoc1h;
+  if (item.hnuoc7h !== undefined) result.Hnuoc7h = item.hnuoc7h;
+  if (item.hnuoc13h !== undefined) result.Hnuoc13h = item.hnuoc13h;
+  if (item.hnuoc19h !== undefined) result.Hnuoc19h = item.hnuoc19h;
+
   const uCols = ['U1h', 'U4h', 'U7h', 'U10h', 'U13h', 'U16h', 'U19h', 'U22h'];
   const uValues = uCols.map(col => {
      const rawVal = item[col] !== undefined ? item[col] : item[col.toLowerCase()];
@@ -41,6 +47,33 @@ const normalizeMeteoData = (item: any): MeteoData => {
 
   return result as MeteoData;
 }
+
+// Helper normalize ClimData
+const normalizeClimData = (item: any): ClimData => {
+  return {
+    id: item.id,
+    Dai: item.dai,
+    Tram: item.tram || item.tentram,
+    Ngay: item.ngay,
+    Thang: item.thang,
+    Ttb: item.nhiettb,
+    Txtb: item.nhiettxtb,
+    Tntb: item.nhiettntb,
+    Tx: item.nhiettx,
+    NgayTx: item.ngaynhiettx,
+    Tn: item.nhiettn,
+    NgayTn: item.ngaynhiettn,
+    AmTb: item.amtb,
+    Umin: item.un,
+    NgayUmin: item.ngayun,
+    BocHoi: item.bochoi,
+    Nang: item.tongnang, // Map cột tổng nắng
+    TongMua: item.tongluongmua,
+    SoNgayMua: item.songaymua,
+    Rx: item.muangaylonnhat,
+    NgayRx: item.ngaymualonnhat
+  };
+};
 
 export const fetchMetadata = async (): Promise<StationMetadata[]> => {
   let { data, error } = await supabase.from('so_lieu_thuy_van').select('TenTram, TenDai');
@@ -133,6 +166,22 @@ export const fetchMeteoDataByGroup = async (group: string, from: string, to: str
   return data ? data.map(normalizeMeteoData) : [];
 };
 
+export const fetchClimData = async (group: string, month: number, year: number): Promise<ClimData[]> => {
+  let query = supabase.from('climthang')
+    .select('*')
+    .eq('thang', month)
+    .gte('ngay', `${year}-01-01`)
+    .lte('ngay', `${year}-12-31`);
+
+  if (group) {
+    query = query.eq('dai', group);
+  }
+
+  const { data, error } = await query.order('tram', { ascending: true });
+  if (error) throw error;
+  return data ? data.map(normalizeClimData) : [];
+};
+
 export const fetchDailyData = async (date: string): Promise<HydroData[]> => {
   if (!date) return [];
   let { data, error } = await supabase.from('so_lieu_thuy_van').select('*').eq('Ngay', date).order('TenTram', { ascending: true });
@@ -161,6 +210,65 @@ export const fetchTBNN = async (station: string, month: number, period: string):
   const { data, error } = await supabase.from('so_lieu_tbnn').select('*').eq('tentram', station).eq('thang', month).eq('ky', searchPeriod).maybeSingle();
   if (error || !data) return null;
   return { TenTram: data.tentram, Thang: data.thang, Ky: data.ky, Htb: data.htb, Hmax: data.hmax, Hmin: data.hmin, Rtb: data.rtb } as TBNNData;
+};
+
+// Hàm lấy chuỗi TBNN cho cả năm (phục vụ dự báo)
+export const fetchTBNNSeries = async (station: string): Promise<TBNNData[]> => {
+  const { data, error } = await supabase
+    .from('so_lieu_tbnn')
+    .select('*')
+    .eq('tentram', station)
+    .eq('ky', 'MONTH')
+    .order('thang', { ascending: true });
+  
+  if (error) return [];
+  return (data || []).map((d:any) => ({
+    TenTram: d.tentram, 
+    Thang: d.thang, 
+    Ky: d.ky, 
+    Htb: d.htb, 
+    Rtb: d.rtb 
+  } as TBNNData));
+};
+
+// Hàm sinh dữ liệu Dự báo (Forecast Generation)
+// Thuật toán: Anomaly Persistence (Dị thường + Quán tính)
+// T_forecast = TBNN + (CurrentDiff * DecayFactor^days)
+export const generateForecastData = (
+  lastDateStr: string, 
+  lastVal: number, 
+  tbnnValCurrentMonth: number, 
+  tbnnData: TBNNData[],
+  forecastDays: number = 10
+): { date: string, value: number, isForecast: boolean }[] => {
+  const predictions = [];
+  const lastDate = new Date(lastDateStr);
+  const currentDiff = lastVal - tbnnValCurrentMonth; // Độ lệch so với TBNN hiện tại
+  
+  // Hệ số suy giảm (Decay Factor): Độ lệch sẽ giảm dần về 0 (trở về TBNN)
+  // 0.85 nghĩa là mỗi ngày độ lệch giảm đi 15%
+  const decayFactor = 0.85; 
+
+  for (let i = 1; i <= forecastDays; i++) {
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(lastDate.getDate() + i);
+    const nextMonth = nextDate.getMonth() + 1;
+
+    // Lấy TBNN của tháng tương ứng
+    const tbnnItem = tbnnData.find(t => t.Thang === nextMonth);
+    const baseVal = tbnnItem?.Htb || tbnnValCurrentMonth;
+
+    // Tính giá trị dự báo
+    const predDiff = currentDiff * Math.pow(decayFactor, i);
+    const predVal = baseVal + predDiff;
+
+    predictions.push({
+      date: nextDate.toISOString().split('T')[0],
+      value: Number(predVal.toFixed(1)),
+      isForecast: true
+    });
+  }
+  return predictions;
 };
 
 export const updateHydroData = async (payload: { TenTram: string, TenDai: string, Ngay: string, column: string, value: string }): Promise<boolean> => {

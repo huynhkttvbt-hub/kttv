@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchMeteoMetadata, fetchTBNN } from '../services/dataService';
 import { supabase } from '../supabaseClient';
@@ -21,9 +20,9 @@ const MeteoSummary: React.FC = () => {
   const [processedData, setProcessedData] = useState<Record<string, MeteoStationSummary[]>>({});
 
   // Memoize available groups
-  const availableGroups = useMemo(() => {
-    const groups = metadata.map(m => m.TenDai).filter(Boolean);
-    return Array.from(new Set(groups)).sort() as string[];
+  const availableGroups = useMemo((): string[] => {
+    const groups = metadata.map(m => m.TenDai).filter((g): g is string => !!g);
+    return Array.from(new Set(groups)).sort();
   }, [metadata]);
 
   useEffect(() => {
@@ -63,11 +62,10 @@ const MeteoSummary: React.FC = () => {
         .eq('ky', period);
       const tbnnRows = (tbnnData as any[]) || [];
 
-      // Sửa lỗi forEach: Ép kiểu rõ ràng cho groupsToProcess
-      const groupsToProcess = (selectedGroup ? [selectedGroup] : availableGroups) as string[];
+      const groupsToProcess: string[] = selectedGroup ? [selectedGroup] : availableGroups;
       const finalResult: Record<string, MeteoStationSummary[]> = {};
 
-      groupsToProcess.forEach((groupName: string) => {
+      groupsToProcess.forEach((groupName) => {
         const stationMetas = metadata.filter(m => m.TenDai === groupName);
         const summaries: MeteoStationSummary[] = stationMetas.map(meta => {
           const rows = meteoRows.filter(r => (r.Tram || r.tram) === meta.TenTram);

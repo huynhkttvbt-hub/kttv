@@ -43,6 +43,15 @@ const MarineDashboard: React.FC = () => {
     XLSX.writeFile(wb, `SoLieuHaiVan_${factor}_${dateFilters.from}.xlsx`);
   };
 
+  const getTitle = () => {
+    switch (factor) {
+      case MarineFactor.NHIET_NUOC: return 'Nhiệt độ nước (°C)';
+      case MarineFactor.SONG: return 'Độ cao sóng (m)';
+      case MarineFactor.MUC_NUOC: return 'Mực nước (cm)';
+      default: return '';
+    }
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-5 animate-fadeIn max-w-[1600px] mx-auto">
       <ErrorBanner message={errorMessage} />
@@ -59,6 +68,7 @@ const MarineDashboard: React.FC = () => {
           >
             <option value={MarineFactor.NHIET_NUOC}>Nhiệt độ nước (°C)</option>
             <option value={MarineFactor.SONG}>Độ cao sóng (m)</option>
+            <option value={MarineFactor.MUC_NUOC}>Mực nước (cm)</option>
           </select>
         </div>
 
@@ -104,10 +114,10 @@ const MarineDashboard: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">
-              Chi tiết số liệu {factor === MarineFactor.NHIET_NUOC ? 'Nhiệt độ nước' : 'Độ cao sóng'}
+              Chi tiết số liệu {getTitle()}
             </h3>
             <p className="text-[10px] text-sky-600 font-black uppercase tracking-widest tracking-widest">
-              5 Trạm Hải văn chính • {dateFilters.from} đến {dateFilters.to}
+              {factor === MarineFactor.MUC_NUOC ? '2 Trạm chính' : '5 Trạm Hải văn chính'} • {dateFilters.from} đến {dateFilters.to}
             </p>
           </div>
         </div>

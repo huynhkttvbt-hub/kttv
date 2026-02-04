@@ -11,6 +11,9 @@ import MeteoDashboard from './components/MeteoDashboard';
 import MeteoTemperatureReport from './components/MeteoTemperatureReport';
 import MarineDashboard from './components/MarineDashboard';
 import MeteoSummary from './components/MeteoSummary';
+import ClimDashboard from './components/ClimDashboard';
+import TrendTemperature from './components/TrendTemperature';
+import TrendRainfall from './components/TrendRainfall';
 import SetupGuide from './components/SetupGuide';
 import { MenuType, SubMenuType, StationMetadata, FilterState, MeteoFactor } from './types';
 import { fetchMetadata, fetchMeteoMetadata, trackVisit } from './services/dataService';
@@ -150,6 +153,9 @@ const App: React.FC = () => {
       if (activeSubMenu === SubMenuType.DAC_TRUNG) {
         return <MeteoSummary />;
       }
+      if (activeSubMenu === SubMenuType.CLIM) {
+        return <ClimDashboard />;
+      }
     }
 
     if (activeSubMenu === SubMenuType.CHI_TIET) {
@@ -158,6 +164,11 @@ const App: React.FC = () => {
     if (activeSubMenu === SubMenuType.DAC_TRUNG) return <HydroSummary />;
     if (activeSubMenu === SubMenuType.TONG_HOP) return <HydroGroupSummary />;
     if (activeSubMenu === SubMenuType.TONG_HOP_NGAY) return <DailySynthesis />;
+
+    if (activeMenu === MenuType.XU_THE) {
+      if (activeSubMenu === SubMenuType.Xuthe_Nhiet) return <TrendTemperature />;
+      if (activeSubMenu === SubMenuType.Xuthe_Mua) return <TrendRainfall />;
+    }
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200 m-6">
@@ -181,6 +192,9 @@ const App: React.FC = () => {
       [SubMenuType.TONG_HOP_NGAY]: 'Tổng hợp ngày',
       [SubMenuType.TONG_HOP_NGAY_KT]: 'Tổng hợp ngày Khí tượng',
       [SubMenuType.NHIET_DO]: 'Số liệu Nhiệt độ',
+      [SubMenuType.CLIM]: 'Số liệu CLim KT',
+      [SubMenuType.Xuthe_Nhiet]: 'Xu thế nhiệt độ',
+      [SubMenuType.Xuthe_Mua]: 'Xu thế mưa',
     };
     return { menu: names[activeMenu] || activeMenu, sub: subNames[activeSubMenu] || 'Dữ liệu' };
   };
