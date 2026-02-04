@@ -35,8 +35,10 @@ export const isConfigured = () => {
          supabaseUrl !== 'https://placeholder.supabase.co';
 };
 
-// Khởi tạo client.
+// Khởi tạo client an toàn
+// Nếu không cấu hình, sử dụng tham số giả để tránh lỗi runtime "supabaseUrl is required"
+// App.tsx sẽ kiểm tra isConfigured() để chặn người dùng thao tác
 export const supabase = createClient(
-  supabaseUrl, 
-  supabaseAnonKey
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder'
 );
