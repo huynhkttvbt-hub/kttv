@@ -212,65 +212,6 @@ export const fetchTBNN = async (station: string, month: number, period: string):
   return { TenTram: data.tentram, Thang: data.thang, Ky: data.ky, Htb: data.htb, Hmax: data.hmax, Hmin: data.hmin, Rtb: data.rtb } as TBNNData;
 };
 
-// Hàm lấy chuỗi TBNN cho cả năm (phục vụ dự báo)
-export const fetchTBNNSeries = async (station: string): Promise<TBNNData[]> => {
-  const { data, error } = await supabase
-    .from('so_lieu_tbnn')
-    .select('*')
-    .eq('tentram', station)
-    .eq('ky', 'MONTH')
-    .order('thang', { ascending: true });
-  
-  if (error) return [];
-  return (data || []).map((d:any) => ({
-    TenTram: d.tentram, 
-    Thang: d.thang, 
-    Ky: d.ky, 
-    Htb: d.htb, 
-    Rtb: d.rtb 
-  } as TBNNData));
-};
-
-// Hàm sinh dữ liệu Dự báo (Forecast Generation)
-// Thuật toán: Anomaly Persistence (Dị thường + Quán tính)
-// T_forecast = TBNN + (CurrentDiff * DecayFactor^days)
-export const generateForecastData = (
-  lastDateStr: string, 
-  lastVal: number, 
-  tbnnValCurrentMonth: number, 
-  tbnnData: TBNNData[],
-  forecastDays: number = 10
-): { date: string, value: number, isForecast: boolean }[] => {
-  const predictions = [];
-  const lastDate = new Date(lastDateStr);
-  const currentDiff = lastVal - tbnnValCurrentMonth; // Độ lệch so với TBNN hiện tại
-  
-  // Hệ số suy giảm (Decay Factor): Độ lệch sẽ giảm dần về 0 (trở về TBNN)
-  // 0.85 nghĩa là mỗi ngày độ lệch giảm đi 15%
-  const decayFactor = 0.85; 
-
-  for (let i = 1; i <= forecastDays; i++) {
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(lastDate.getDate() + i);
-    const nextMonth = nextDate.getMonth() + 1;
-
-    // Lấy TBNN của tháng tương ứng
-    const tbnnItem = tbnnData.find(t => t.Thang === nextMonth);
-    const baseVal = tbnnItem?.Htb || tbnnValCurrentMonth;
-
-    // Tính giá trị dự báo
-    const predDiff = currentDiff * Math.pow(decayFactor, i);
-    const predVal = baseVal + predDiff;
-
-    predictions.push({
-      date: nextDate.toISOString().split('T')[0],
-      value: Number(predVal.toFixed(1)),
-      isForecast: true
-    });
-  }
-  return predictions;
-};
-
 export const updateHydroData = async (payload: { TenTram: string, TenDai: string, Ngay: string, column: string, value: string }): Promise<boolean> => {
   try {
     const { TenTram, TenDai, Ngay, column, value } = payload;

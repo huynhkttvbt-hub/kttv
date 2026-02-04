@@ -170,7 +170,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
             { label: 'Hải văn', type: SubMenuType.TV_PHU_QUY }
           ]}
         />
-         {/* <MenuItem 
+         <MenuItem 
           icon={Anchor} 
           label="DỰ BÁO XU THẾ" 
           type={MenuType.XU_THE}
@@ -178,7 +178,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
             { label: 'Xu thế nhiệt độ', type: SubMenuType.Xuthe_Nhiet },
             { label: 'Xu thế mưa', type: SubMenuType.Xuthe_Mua }
           ]}
-        /> */}
+        />
       </div>
 
       {isOpen && (

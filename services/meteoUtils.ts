@@ -1,4 +1,3 @@
-
 /**
  * Bảng mã Hiện tượng hiện tại (WW - Present Weather)
  */
@@ -70,16 +69,18 @@ export const MARINE_WAVE_CODES: Record<number, string> = {
   6: "3.25",
   7: "3.75",
   8: "4.25",
-  9: "4.75",
-
+  9: "5.75",
 };
 
 /**
  * Hàm chuyển đổi mã số sang tên hiện tượng
  * @param isPast Nếu true sẽ tra bảng W1, W2. Nếu false sẽ tra bảng WW.
  */
-export const translateWeatherCode = (code: any, isPast: boolean = false): string => {
-  if (code === null || code === undefined || code === '') return '-';
+export const translateWeatherCode = (
+  code: any,
+  isPast: boolean = false,
+): string => {
+  if (code === null || code === undefined || code === "") return "-";
   const numericCode = Number(code);
   const dictionary = isPast ? PAST_WEATHER_CODES : WW_CODES;
   return dictionary[numericCode] || `${code}`;
@@ -89,7 +90,7 @@ export const translateWeatherCode = (code: any, isPast: boolean = false): string
  * Hàm chuyển đổi mã độ cao sóng sang khoảng mét thực tế
  */
 export const translateWaveCode = (code: any): string => {
-  if (code === null || code === undefined || code === '') return '-';
+  if (code === null || code === undefined || code === "") return "-";
   const numericCode = Number(code);
   return MARINE_WAVE_CODES[numericCode] || `${code}`;
 };
