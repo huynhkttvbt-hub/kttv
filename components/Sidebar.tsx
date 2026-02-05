@@ -112,7 +112,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
            {isOpen && (
              <div className="text-left leading-none whitespace-nowrap animate-fadeIn">
                <h1 className="text-[10px] font-black text-blue-900 tracking-tighter uppercase"></h1>
-               <h2 className="text-[12px] font-black text-blue-600 tracking-widest uppercase">KTTV Lâm Đồng</h2>
+               <h2 className="text-[12px] font-black text-blue-600 tracking-widest uppercase"></h2>
              </div>
            )}
         </div>
