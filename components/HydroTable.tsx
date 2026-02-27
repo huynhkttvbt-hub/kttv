@@ -1,7 +1,6 @@
 
 import React from 'react';
-import { HydroData } from '../types';
-import { HOURLY_COLUMNS, EXTRA_COLUMNS } from '../constants';
+import { HydroData, HOURLY_COLUMNS, EXTRA_COLUMNS } from '../types';
 
 interface HydroTableProps {
   data: HydroData[];
