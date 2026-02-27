@@ -45,6 +45,22 @@ const normalizeMeteoData = (item: any): MeteoData => {
     result.Umin = item.umin || item.Umin || null;
   }
 
+  // Tính R19_7 = R1h + R7h (mưa đêm: 19h hôm trước → 7h hôm sau)
+  const r1h = parseFloat(item.R1h ?? item.r1h ?? '');
+  const r7h = parseFloat(item.R7h ?? item.r7h ?? '');
+  if (!isNaN(r1h) || !isNaN(r7h)) {
+    const sum = (isNaN(r1h) ? 0 : r1h) + (isNaN(r7h) ? 0 : r7h);
+    result.R19_7 = Math.round(sum * 10) / 10;
+  }
+
+  // Tính R7_19 = R13h + R19h (mưa ngày)
+  const r13h = parseFloat(item.R13h ?? item.r13h ?? '');
+  const r19h = parseFloat(item.R19h ?? item.r19h ?? '');
+  if (!isNaN(r13h) || !isNaN(r19h)) {
+    const sum = (isNaN(r13h) ? 0 : r13h) + (isNaN(r19h) ? 0 : r19h);
+    result.R7_19 = Math.round(sum * 10) / 10;
+  }
+
   return result as MeteoData;
 }
 
