@@ -144,6 +144,7 @@ export enum MarineFactor {
 }
 
 export enum MenuType {
+  TONG_QUAN = 'TONG_QUAN',
   KHI_TUONG = 'KHI_TUONG',
   THUY_VAN = 'THUY_VAN',
   MUA = 'MUA',
