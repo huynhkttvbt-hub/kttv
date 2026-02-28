@@ -13,7 +13,8 @@ import {
   Menu,
   ChevronLeft,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  BarChart3
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -129,6 +130,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
       </div>
 
       <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar overflow-x-hidden">
+        <MenuItem icon={BarChart3} label="TỔNG QUAN" type={MenuType.TONG_QUAN} />
+        <div className="my-2 border-t border-slate-100"></div>
         <MenuItem 
           icon={CloudSun} 
           label="KHÍ TƯỢNG" 
