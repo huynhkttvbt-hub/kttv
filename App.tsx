@@ -13,6 +13,7 @@ import MarineDashboard from './components/MarineDashboard';
 import MeteoSummary from './components/MeteoSummary';
 import ClimDashboard from './components/ClimDashboard';
 import SetupGuide from './components/SetupGuide';
+import KTTVOverview from './components/KTTVOverview';
 import { MenuType, SubMenuType, StationMetadata, FilterState, MeteoFactor } from './types';
 import { fetchMetadata, fetchMeteoMetadata, trackVisit } from './services/dataService';
 import { isConfigured } from './supabaseClient';
@@ -20,7 +21,7 @@ import { CloudRain } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [activeMenu, setActiveMenu] = useState<MenuType>(MenuType.THUY_VAN);
+  const [activeMenu, setActiveMenu] = useState<MenuType>(MenuType.TONG_QUAN);
   const [activeSubMenu, setActiveSubMenu] = useState<SubMenuType>(SubMenuType.CHI_TIET);
   const [metadata, setMetadata] = useState<StationMetadata[]>([]);
   const [hasConfig, setHasConfig] = useState(isConfigured());
@@ -122,6 +123,10 @@ const App: React.FC = () => {
   const renderContent = () => {
     if (!hasConfig) return <SetupGuide />;
 
+    if (activeMenu === MenuType.TONG_QUAN) {
+       return <KTTVOverview />;
+    }
+
     if (activeMenu === MenuType.HAI_VAN) {
        return <MarineDashboard />;
     }
@@ -172,6 +177,7 @@ const App: React.FC = () => {
 
   const getMenuInfo = () => {
     const names: Record<string, string> = {
+      [MenuType.TONG_QUAN]: 'TỔNG QUAN',
       [MenuType.THUY_VAN]: 'THUỶ VĂN',
       [MenuType.KHI_TUONG]: 'KHÍ TƯỢNG',
       [MenuType.MUA]: 'MƯA',
