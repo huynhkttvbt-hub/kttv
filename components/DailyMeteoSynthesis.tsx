@@ -116,6 +116,7 @@ const DailyMeteoSynthesis: React.FC = () => {
     const flatData = processedGroups.flatMap(group => 
       group.stations.map(s => ({
         'Đài': group.groupName, 'Trạm': s.TenTram,
+        'T.1h': s.row?.T1h || '', 'T.7h': s.row?.T7h || '', 'T.13h': s.row?.T13h || '', 'T.19h': s.row?.T19h || '',
         'T.Bình': s.row?.NhietTB || '', 'Delta Tb': s.deltaTB?.toFixed(1) || '',
         'T.Cao': s.row?.NhietTx || '', 'Delta Tx': s.deltaTx?.toFixed(1) || '',
         'T.Thấp': s.row?.NhietTn || '', 'Delta Tn': s.deltaTn?.toFixed(1) || '',
@@ -192,13 +193,18 @@ const DailyMeteoSynthesis: React.FC = () => {
               <thead className="sticky top-0 z-30 bg-white">
                 <tr className="bg-slate-50">
                    <th rowSpan={2} className="p-2 font-bold text-slate-700 border border-slate-300 w-[160px] sticky left-0 bg-slate-100 z-40 text-center text-xs shadow-[1px_0_0_0_#cbd5e1] uppercase">ĐƠN VỊ</th>
-                   <th colSpan={6} className="p-2 font-bold text-red-600 border border-slate-300 text-center bg-red-50/30 text-xs uppercase">Nhiệt độ (°C) & Xu thế </th>
+                   <th colSpan={10} className="p-2 font-bold text-red-600 border border-slate-300 text-center bg-red-50/30 text-xs uppercase">Nhiệt độ (°C) & Xu thế</th>
                    <th colSpan={2} className="p-2 font-bold text-blue-600 border border-slate-300 text-center bg-blue-50/30 text-xs uppercase">Ẩm độ (%)</th>
                    <th colSpan={3} className="p-2 font-bold text-emerald-600 border border-slate-300 text-center bg-emerald-50/30 text-xs uppercase">Mưa (mm)</th>
                    <th colSpan={2} className="p-2 font-bold text-sky-600 border border-slate-300 text-center bg-sky-50/30 text-xs uppercase">Gió Max các Obs</th>
                 </tr>
                 <tr className="bg-slate-50 sticky top-[30px] z-30 shadow-sm">
-                   {/* Nhiệt độ headers */}
+                   {/* Nhiệt độ obs headers */}
+                   <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[40px]">1h</th>
+                   <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[40px]">7h</th>
+                   <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[40px]">13h</th>
+                   <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[40px]">19h</th>
+                   {/* Nhiệt độ tổng hợp & xu thế headers */}
                    <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[45px]">T.Tb</th>
                    <th className="p-1.5 text-[11px] font-black text-red-400 border border-slate-300 text-center bg-red-50/5 w-[35px]">ΔTtb</th>
                    <th className="p-1.5 text-[11px] font-bold text-red-700 border border-slate-300 text-center bg-red-50/10 w-[45px]">T.Max</th>
@@ -218,18 +224,24 @@ const DailyMeteoSynthesis: React.FC = () => {
               </thead>
               <tbody className="text-xs">
                 {loading ? (
-                   <tr><td colSpan={18}><LoadingState /></td></tr>
+                   <tr><td colSpan={22}><LoadingState /></td></tr>
                 ) : processedGroups.length > 0 ? (
                    processedGroups.map((group) => (
                      <React.Fragment key={group.groupName}>
                        <tr className="bg-slate-100">
-                         <td colSpan={18} className="p-2 font-bold text-slate-800 uppercase text-[11px] border border-slate-300 sticky left-0 z-20 bg-slate-200 shadow-[1px_0_0_0_#cbd5e1] pl-3">
+                         <td colSpan={22} className="p-2 font-bold text-slate-800 uppercase text-[11px] border border-slate-300 sticky left-0 z-20 bg-slate-200 shadow-[1px_0_0_0_#cbd5e1] pl-3">
                            {group.groupName}
                          </td>
                        </tr>
                        {group.stations.map((s, idx) => (
                          <tr key={idx} className="hover:bg-blue-50/30 transition-colors border border-slate-300 group">
                             <td className="p-2 font-bold text-slate-700 border border-slate-300 sticky left-0 bg-white group-hover:bg-blue-50/30 z-10 shadow-[1px_0_0_0_#cbd5e1] pl-6">{s.TenTram}</td>
+                            
+                            {/* Nhiệt độ obs 1h, 7h, 13h, 19h */}
+                            <td className="p-2 text-center border border-slate-300 text-red-700 font-semibold">{fmtT(s.row?.T1h)}</td>
+                            <td className="p-2 text-center border border-slate-300 text-red-700 font-semibold">{fmtT(s.row?.T7h)}</td>
+                            <td className="p-2 text-center border border-slate-300 text-red-700 font-semibold">{fmtT(s.row?.T13h)}</td>
+                            <td className="p-2 text-center border border-slate-300 text-red-700 font-semibold">{fmtT(s.row?.T19h)}</td>
                             
                             {/* T.Tb & Delta */}
                             <td className="p-2 text-center border border-slate-300 text-slate-800 font-bold">{fmtT(s.row?.NhietTB)}</td>
@@ -257,7 +269,7 @@ const DailyMeteoSynthesis: React.FC = () => {
                      </React.Fragment>
                    ))
                 ) : (
-                   <tr><td colSpan={18}><EmptyState message="Không có dữ liệu" /></td></tr>
+                   <tr><td colSpan={22}><EmptyState message="Không có dữ liệu" /></td></tr>
                 )}
               </tbody>
            </table>
