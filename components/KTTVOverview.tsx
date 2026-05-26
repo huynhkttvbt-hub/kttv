@@ -6,7 +6,7 @@ import { MeteoData, StationMetadata } from '../types';
 import {
   Calendar, Layers, Thermometer, Droplets, CloudRain, Wind, Zap,
   TrendingDown, TrendingUp, ChevronLeft, ChevronRight, FileText,
-  BarChart3
+  BarChart3, Award
 } from 'lucide-react';
 import { FilterContainer, MainCard, PageHeader, LoadingState, ActionButtons, EmptyState, ErrorBanner } from './Shared';
 import {
@@ -83,14 +83,16 @@ const getWindInfo = (row: MeteoData) => {
   let maxFF = -1; let bestDD = '-';
   const hours = ['1h','4h','7h','10h','13h','16h','19h','22h'];
   hours.forEach(h => {
-    const ff = Number(row[`ff${h}`]);
-    if (!isNaN(ff) && ff > maxFF) { maxFF = ff; bestDD = row[`dd${h}`] || '-'; }
+    const ff = Number(row[`ff${h}`] ?? row[`ff${h.toLowerCase()}`]);
+    if (!isNaN(ff) && ff > maxFF) { maxFF = ff; bestDD = row[`dd${h}`] ?? row[`dd${h.toLowerCase()}`] ?? '-'; }
   });
-  // Also check Fmax fields
   const fmaxHours = ['1h','7h','13h','19h'];
   fmaxHours.forEach(h => {
-    const ff = Number(row[`Fmax${h}`]);
-    if (!isNaN(ff) && ff > maxFF) { maxFF = ff; bestDD = row[`Dmax${h}`] || '-'; }
+    const ff = Number(row[`Fmax${h}`] ?? row[`fmax${h}`] ?? row[`Fmax${h.toLowerCase()}`] ?? row[`fmax${h.toLowerCase()}`]);
+    if (!isNaN(ff) && ff > maxFF) { 
+      maxFF = ff; 
+      bestDD = row[`Dmax${h}`] ?? row[`dmax${h}`] ?? row[`Dmax${h.toLowerCase()}`] ?? row[`dmax${h.toLowerCase()}`] ?? '-'; 
+    }
   });
   return maxFF >= 0 ? { ff: maxFF, dd: bestDD } : null;
 };
@@ -105,7 +107,127 @@ const hasThunder = (row: MeteoData): boolean => {
 
 const STRONG_WIND_THRESHOLD = 16; // m/s
 
-// =========== COMPONENT ===========
+// =========== SUB-COMPONENTS ===========
+interface ExtremeRankingCardProps {
+  title: string;
+  icon: any;
+  colorClass: string;
+  data: any[] | undefined;
+  type: 'tx' | 'tn' | 'rain' | 'wind' | 'umin';
+  unit: string;
+}
+
+const ExtremeRankingCard: React.FC<ExtremeRankingCardProps> = ({ title, icon: Icon, colorClass, data, type, unit }) => {
+  if (!data || data.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col items-center justify-center min-h-[260px]">
+        <Icon className="text-slate-300 mb-2" size={24} />
+        <span className="text-xs text-slate-400 font-bold uppercase">{title}</span>
+        <span className="text-[10px] text-slate-300 mt-1">Không có dữ liệu</span>
+      </div>
+    );
+  }
+
+  // Find max value in this specific dataset to scale progress bars relative to the top rank
+  const maxVal = data[0] ? (
+    type === 'tx' ? data[0].maxTx :
+    type === 'tn' ? data[0].minTn :
+    type === 'rain' ? data[0].maxRain :
+    type === 'wind' ? data[0].maxWind :
+    data[0].minU
+  ) : 1;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow duration-300">
+      <div className="p-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-white ${colorClass} shadow-sm`}>
+            <Icon size={14} />
+          </div>
+          <span className="text-xs font-black text-slate-700 uppercase tracking-tight">{title}</span>
+        </div>
+        <span className="text-[9px] bg-slate-100 font-bold px-2 py-0.5 rounded-full text-slate-500 uppercase">Top {data.length}</span>
+      </div>
+      
+      <div className="p-3 flex flex-col gap-3 min-h-[220px]">
+        {data.map((item: any, idx: number) => {
+          let value = 0;
+          let dateStr = '';
+          let stationInfo = item.station;
+          let subInfo = item.dai;
+
+          if (type === 'tx') { value = item.maxTx; dateStr = item.maxTxDate; }
+          else if (type === 'tn') { value = item.minTn; dateStr = item.minTnDate; }
+          else if (type === 'rain') { value = item.maxRain; dateStr = item.maxRainDate; }
+          else if (type === 'wind') { value = item.maxWind; dateStr = item.maxWindDate; }
+          else if (type === 'umin') { value = item.minU; dateStr = item.minUDate; }
+
+          const displayDate = dateStr ? dateStr.split('-').slice(1).reverse().join('/') : '';
+          
+          // Calculate progress percentage
+          let pct = 0;
+          if (type === 'tn') {
+            pct = value > 0 ? (35 - value) / (35 - maxVal) * 100 : 0;
+          } else {
+            pct = maxVal > 0 ? (value / maxVal) * 100 : 0;
+          }
+          pct = Math.min(100, Math.max(15, pct));
+
+          const rankColors = [
+            'bg-amber-400 text-white shadow-amber-100', // Gold
+            'bg-slate-300 text-slate-700 shadow-slate-100', // Silver
+            'bg-orange-400 text-white shadow-orange-100', // Bronze
+            'bg-slate-100 text-slate-500',
+            'bg-slate-50 text-slate-400'
+          ];
+
+          return (
+            <div key={idx} className="flex flex-col gap-1 transition-all hover:translate-x-0.5 duration-200">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-sm shrink-0 ${rankColors[idx] || 'bg-slate-100 text-slate-500'}`}>
+                    {idx + 1}
+                  </span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[11px] font-black text-slate-700 truncate">{stationInfo}</span>
+                    <span className="text-[9px] text-slate-400 font-semibold truncate">{subInfo}</span>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col items-end shrink-0">
+                  <span className="text-xs font-black text-slate-800">
+                    {type === 'umin' ? Math.round(value) : value.toFixed(1)}
+                    <span className="text-[9px] font-bold text-slate-400 ml-0.5">{unit}</span>
+                  </span>
+                  {displayDate && (
+                    <span className="text-[8px] text-slate-400 font-bold bg-slate-50 px-1 py-0.2 rounded border border-slate-100 leading-none mt-0.5">
+                      {displayDate}
+                    </span>
+                  )}
+                </div>
+              </div>
+              
+              <div className="w-full h-1 bg-slate-50 rounded-full overflow-hidden mt-0.5">
+                <div 
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    type === 'tx' ? 'bg-red-500' :
+                    type === 'tn' ? 'bg-blue-500' :
+                    type === 'rain' ? 'bg-emerald-500' :
+                    type === 'wind' ? 'bg-indigo-500' :
+                    'bg-amber-500'
+                  }`}
+                  style={{ width: `${pct}%` }}
+                ></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// =========== MAIN COMPONENT ===========
 const KTTVOverview: React.FC = () => {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [periodType, setPeriodType] = useState<PeriodType>('1D');
@@ -226,6 +348,95 @@ const KTTVOverview: React.FC = () => {
     };
   }, [dailySummaries, rawData]);
 
+  // ===== TOP 5 EXTREMES =====
+  const topExtremes = useMemo(() => {
+    if (!rawData.length) return null;
+
+    // Aggregate extremes per station over the period to rank them fairly
+    const stationData: Record<string, {
+      station: string;
+      dai: string;
+      maxTx: number; maxTxDate: string;
+      minTn: number; minTnDate: string;
+      maxRain: number; maxRainDate: string;
+      maxWind: number; maxWindDir: string; maxWindDate: string;
+      minU: number; minUDate: string;
+    }> = {};
+
+    rawData.forEach(r => {
+      const station = r.Tram || r.tram || '-';
+      const dai = r.Dai || r.dai || '-';
+      const date = r.Ngay;
+      
+      const tx = Number(r.NhietTx ?? r.nhiettx);
+      const tn = Number(r.NhietTn ?? r.nhietttn);
+      const rain = Number(r.Mua24h ?? r.mua24h);
+      const u = Number(r.Umin ?? r.umin);
+      const w = getWindInfo(r);
+
+      if (!stationData[station]) {
+        stationData[station] = {
+          station,
+          dai,
+          maxTx: -Infinity, maxTxDate: '',
+          minTn: Infinity, minTnDate: '',
+          maxRain: -Infinity, maxRainDate: '',
+          maxWind: -Infinity, maxWindDir: '', maxWindDate: '',
+          minU: Infinity, minUDate: '',
+        };
+      }
+
+      const s = stationData[station];
+
+      if (!isNaN(tx) && tx > s.maxTx) { s.maxTx = tx; s.maxTxDate = date; }
+      if (!isNaN(tn) && tn < s.minTn) { s.minTn = tn; s.minTnDate = date; }
+      if (!isNaN(rain) && rain > s.maxRain) { s.maxRain = rain; s.maxRainDate = date; }
+      if (!isNaN(u) && u > 0 && u < s.minU) { s.minU = u; s.minUDate = date; }
+      if (w && w.ff > s.maxWind) { s.maxWind = w.ff; s.maxWindDir = w.dd; s.maxWindDate = date; }
+    });
+
+    const list = Object.values(stationData);
+
+    const topTx = list
+      .filter(s => s.maxTx !== -Infinity)
+      .sort((a, b) => b.maxTx - a.maxTx)
+      .slice(0, 5);
+
+    const topTn = list
+      .filter(s => s.minTn !== Infinity)
+      .sort((a, b) => a.minTn - b.minTn)
+      .slice(0, 5);
+
+    const topRain = list
+      .filter(s => s.maxRain > 0)
+      .sort((a, b) => b.maxRain - a.maxRain)
+      .slice(0, 5);
+
+    const topWind = list
+      .filter(s => s.maxWind > 0)
+      .sort((a, b) => b.maxWind - a.maxWind)
+      .slice(0, 5);
+
+    const topHumidity = list
+      .filter(s => s.minU !== Infinity && s.minU > 0)
+      .sort((a, b) => a.minU - b.minU)
+      .slice(0, 5);
+
+    return { topTx, topTn, topRain, topWind, topHumidity };
+  }, [rawData]);
+
+  // ===== STATION CHART DATA (FOR 1 DAY PERIOD) =====
+  const stationChartData = useMemo(() => {
+    if (dailySummaries.length !== 1 || !rawData.length) return [];
+    return rawData.map(r => ({
+      station: r.Tram || r.tram || '-',
+      Tx: Number(r.NhietTx ?? r.nhiettx) || 0,
+      Tn: Number(r.NhietTn ?? r.nhietttn) || 0,
+      Rain: Number(r.Mua24h ?? r.mua24h) || 0,
+      Wind: getWindInfo(r)?.ff || 0
+    })).sort((a, b) => b.Tx - a.Tx);
+  }, [rawData, dailySummaries]);
+
   // ===== GROUP SUMMARIES =====
   const groupSummaries = useMemo((): GroupSummary[] => {
     if (!rawData.length) return [];
@@ -340,7 +551,7 @@ const KTTVOverview: React.FC = () => {
     else if (s.RainMax >= 50) text += 'Mưa lớn có khả năng gây ngập úng cục bộ tại một số khu vực trũng.';
     else if (s.WindMax >= 15) text += 'Gió mạnh ảnh hưởng đến hoạt động ngoài trời.';
     else if (s.ThunderStations.length > 3) text += 'Dông hoạt động mạnh trên diện rộng, cần đề phòng sét, lốc xoáy, mưa đá và gió giật mạnh.';
-    else text += 'Thời tiết này cũng dễ chịu.';
+    else text += 'Thời tiết tương đối ổn định, không có hiện tượng cực đoan diện rộng.';
 
     return text;
   }, [overallSummary, dailySummaries, dateRange, selectedGroup]);
@@ -460,7 +671,7 @@ const KTTVOverview: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-5 animate-fadeIn max-w-[1600px] mx-auto">
+    <div className="p-4 md:p-6 space-y-6 animate-fadeIn max-w-[1600px] mx-auto">
       {/* ===== FILTER BAR ===== */}
       <FilterContainer>
         <div className="flex flex-col gap-1.5 w-[170px]">
@@ -538,7 +749,109 @@ const KTTVOverview: React.FC = () => {
               color="#8b5cf6" bgGradient="bg-gradient-to-br from-violet-50 to-white" />
           </div>
 
-          {/* ===== CHARTS ===== */}
+          {/* ===== EXTREME RANKINGS LEADERBOARD (NEW) ===== */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                <Award size={15} className="text-amber-500 animate-pulse" /> Bảng xếp hạng các trạm cực trị trong kỳ
+              </h3>
+              <span className="text-[10px] text-slate-400 font-bold">
+                (Hiển thị tối đa 5 trạm cực đoan nhất)
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <ExtremeRankingCard 
+                title="Nhiệt độ tối cao" 
+                icon={TrendingUp} 
+                colorClass="bg-red-500" 
+                data={topExtremes?.topTx} 
+                type="tx" 
+                unit="°C" 
+              />
+              <ExtremeRankingCard 
+                title="Nhiệt độ tối thấp" 
+                icon={TrendingDown} 
+                colorClass="bg-blue-500" 
+                data={topExtremes?.topTn} 
+                type="tn" 
+                unit="°C" 
+              />
+              <ExtremeRankingCard 
+                title="Lượng mưa lớn nhất" 
+                icon={CloudRain} 
+                colorClass="bg-emerald-500" 
+                data={topExtremes?.topRain} 
+                type="rain" 
+                unit="mm" 
+              />
+              <ExtremeRankingCard 
+                title="Sức gió mạnh nhất" 
+                icon={Wind} 
+                colorClass="bg-indigo-500" 
+                data={topExtremes?.topWind} 
+                type="wind" 
+                unit="m/s" 
+              />
+              <ExtremeRankingCard 
+                title="Độ ẩm thấp nhất" 
+                icon={Droplets} 
+                colorClass="bg-amber-500" 
+                data={topExtremes?.topHumidity} 
+                type="umin" 
+                unit="%" 
+              />
+            </div>
+          </div>
+
+          {/* ===== CHARTS FOR 1 DAY (NEW) ===== */}
+          {dailySummaries.length === 1 && stationChartData.length > 0 && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Station Temp Chart */}
+              <MainCard>
+                <div className="p-4 border-b border-slate-100">
+                  <h4 className="text-xs font-black text-slate-700 tracking-tight flex items-center gap-2">
+                    <Thermometer size={18} className="text-red-500" /> So sánh Nhiệt độ giữa các Trạm (°C)
+                  </h4>
+                </div>
+                <div className="p-3" style={{ height: 320 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stationChartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="station" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} angle={-25} textAnchor="end" interval={0} />
+                      <YAxis tick={{ fontSize: 10, fill: '#64748b' }} domain={['auto', 'auto']} />
+                      <Tooltip formatter={(value: any) => [`${value} °C`]} />
+                      <Legend iconSize={10} wrapperStyle={{ fontSize: 10, fontWeight: 700 }} />
+                      <Bar dataKey="Tx" name="Nhiệt độ tối cao (Tx)" fill="#f87171" radius={[4,4,0,0]} />
+                      <Bar dataKey="Tn" name="Nhiệt độ tối thấp (Tn)" fill="#60a5fa" radius={[4,4,0,0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </MainCard>
+
+              {/* Station Rain Chart */}
+              <MainCard>
+                <div className="p-4 border-b border-slate-100">
+                  <h4 className="text-xs font-black text-slate-700 tracking-tight flex items-center gap-2">
+                    <CloudRain size={18} className="text-emerald-500" /> So sánh Lượng mưa 24h giữa các Trạm (mm)
+                  </h4>
+                </div>
+                <div className="p-3" style={{ height: 320 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stationChartData.filter(s => s.Rain > 0).sort((a,b) => b.Rain - a.Rain)} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                      <XAxis dataKey="station" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} angle={-25} textAnchor="end" interval={0} />
+                      <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                      <Tooltip formatter={(value: any) => [`${value} mm`]} />
+                      <Bar dataKey="Rain" name="Lượng mưa 24h" fill="#34d399" radius={[4,4,0,0]} barSize={30} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </MainCard>
+            </div>
+          )}
+
+          {/* ===== CHARTS FOR PERIOD (MULTIPLE DAYS) ===== */}
           {dailySummaries.length > 1 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* Temperature + Rain Chart */}
