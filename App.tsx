@@ -14,10 +14,10 @@ import MeteoSummary from './components/MeteoSummary';
 import ClimDashboard from './components/ClimDashboard';
 import SetupGuide from './components/SetupGuide';
 import KTTVOverview from './components/KTTVOverview';
+import RainDashboard from './components/RainDashboard';
 import { MenuType, SubMenuType, StationMetadata, FilterState, MeteoFactor } from './types';
 import { fetchMetadata, fetchMeteoMetadata, trackVisit } from './services/dataService';
 import { isConfigured } from './supabaseClient';
-import { CloudRain } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -132,15 +132,7 @@ const App: React.FC = () => {
     }
 
     if (activeMenu === MenuType.MUA) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-[500px] text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200 m-6 animate-fadeIn">
-          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-5 shadow-inner">
-            <CloudRain size={40} className="text-slate-300" />
-          </div>
-          <h2 className="text-xl font-black text-slate-600 uppercase tracking-tight">Tính năng Mưa đang phát triển</h2>
-          <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Vui lòng quay lại sau</p>
-        </div>
-      );
+      return <RainDashboard />;
     }
 
     if (activeMenu === MenuType.KHI_TUONG) {
