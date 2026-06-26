@@ -163,25 +163,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, activeMenu, activeSubMenu, on
             { label: 'Số liệu chi tiết', type: SubMenuType.CHI_TIET }
           ]}
         />
-        <MenuItem icon={CloudRain} label="MƯA" type={MenuType.MUA} />
-        <MenuItem 
-          icon={Anchor} 
-          label="TRẠM PHÚ QUÝ" 
-          type={MenuType.PHU_QUY}
-          subMenus={[
-            { label: 'Khí tượng', type: SubMenuType.KT_PHU_QUY },
-            { label: 'Hải văn', type: SubMenuType.TV_PHU_QUY }
-          ]}
-        />
-         <MenuItem 
-          icon={Anchor} 
-          label="DỰ BÁO XU THẾ" 
-          type={MenuType.XU_THE}
-          subMenus={[
-            { label: 'Xu thế nhiệt độ', type: SubMenuType.Xuthe_Nhiet },
-            { label: 'Xu thế mưa', type: SubMenuType.Xuthe_Mua }
-          ]}
-        />
+        <MenuItem icon={CloudRain} label="DỰ BÁO MƯA NGÀY" type={MenuType.MUA} />
       </div>
 
       {isOpen && (
