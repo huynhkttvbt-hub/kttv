@@ -1,6 +1,6 @@
 
 import { supabase } from '../supabaseClient';
-import { HydroData, MeteoData, ClimData, FilterState, StationMetadata, TBNNData, AlarmLevels, HOURLY_COLUMNS } from '../types';
+import { HydroData, MeteoData, ClimData, FilterState, StationMetadata, TBNNData, AlarmLevels, HOURLY_COLUMNS, RainForecastRecord } from '../types';
 
 // Helper to normalize keys to PascalCase if DB returns lowercase
 const normalizeHydroData = (item: any): HydroData => {
@@ -312,3 +312,69 @@ export const trackVisit = async (): Promise<number> => {
     }
   } catch (e) { return 0; }
 };
+
+// ===================== RAIN FORECAST =====================
+
+export const fetchRainForecastFilters = async (): Promise<{ regions: string[]; communes: string[]; dates: string[] }> => {
+  try {
+    const { data, error } = await supabase
+      .from('rain_forecast_records')
+      .select('region, commune_name, forecast_date');
+    if (error) throw error;
+    const regions = Array.from(new Set((data || []).map((d: any) => d.region).filter(Boolean))).sort() as string[];
+    const communes = Array.from(new Set((data || []).map((d: any) => d.commune_name).filter(Boolean))).sort() as string[];
+    const dates = Array.from(new Set((data || []).map((d: any) => d.forecast_date).filter(Boolean))).sort().reverse() as string[];
+    return { regions, communes, dates };
+  } catch (e) {
+    console.error("Lỗi tải bộ lọc mưa:", e);
+    return { regions: [], communes: [] };
+  }
+};
+
+export const fetchRainForecastData = async (params: {
+  date?: string;
+  region?: string;
+  commune?: string;
+}): Promise<RainForecastRecord[]> => {
+  try {
+    let query = supabase
+      .from('rain_forecast_records')
+      .select('*')
+      .order('forecast_date', { ascending: true })
+      .order('stt', { ascending: true });
+
+    if (params.date) {
+      query = query.eq('forecast_date', params.date);
+    }
+    if (params.region) {
+      query = query.eq('region', params.region);
+    }
+    if (params.commune) {
+      query = query.eq('commune_name', params.commune);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []) as RainForecastRecord[];
+  } catch (e) {
+    console.error("Lỗi tải dữ liệu mưa:", e);
+    throw e;
+  }
+};
+
+export const fetchLatestRainRunDate = async (): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('rain_forecast_records')
+      .select('forecast_date')
+      .order('forecast_date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.forecast_date || null;
+  } catch (e) {
+    console.error("Lỗi lấy ngày mới nhất:", e);
+    return null;
+  }
+};
+
