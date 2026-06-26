@@ -143,6 +143,28 @@ export enum MarineFactor {
   MUC_NUOC = 'MUC_NUOC'
 }
 
+export interface RainForecastRecord {
+  id: number;
+  run_id: string;
+  stt: number | null;
+  commune_name: string;
+  lat: number;
+  lon: number;
+  region: string | null;
+  forecast_date: string;
+  forecast_day_label: string;
+  model_count: number | null;
+  rain_min: number | null;
+  rain_median: number | null;
+  rain_max: number | null;
+  rain_max_wrf: number | null;
+  prob_gte_5: number | null;
+  prob_gte_10: number | null;
+  prob_gte_15: number | null;
+  prob_gte_20: number | null;
+  created_at: string;
+}
+
 export enum MenuType {
   TONG_QUAN = 'TONG_QUAN',
   KHI_TUONG = 'KHI_TUONG',
