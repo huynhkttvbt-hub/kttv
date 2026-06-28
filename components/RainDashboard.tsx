@@ -220,7 +220,7 @@ const RainDashboard: React.FC = () => {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 animate-fadeIn">
           <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tổng bản ghi</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Số xã, phường dự báo</p>
             <p className="text-2xl font-black text-slate-800 mt-1">{stats.total.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
@@ -228,7 +228,7 @@ const RainDashboard: React.FC = () => {
             <p className="text-2xl font-black text-blue-600 mt-1">{stats.uniqueDates}</p>
           </div>
           <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Max Mưa (mm)</p>
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lượng mưa Max (mm)</p>
             <p className="text-2xl font-black text-orange-500 mt-1">{formatNum(stats.maxRain)}</p>
           </div>
           <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
